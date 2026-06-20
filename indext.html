@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crockcity - Kiếm Tiền Online 2026</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav>
+        <div class="logo" style="display: flex; align-items: center; gap: 8px; font-family: 'Arial Black', Gadget, sans-serif;">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width: 35px; height: 35px; filter: drop-shadow(0 0 6px #ffd700);">
+                <path d="M20,15 L40,85 L55,85 L80,15 L62,15 L48,65 L35,15 Z" fill="#ffffff"/>
+                <polygon points="45,5 65,45 50,45 60,95 35,50 50,50" fill="#ffd700"/>
+            </svg>
+            <span style="color: #ffd700; text-shadow: 0 0 8px #ffd700; font-weight: 900; font-size: 24px;">Crockcity</span>
+        </div>
+        <ul>
+            <li><a href="#" id="menu-home" class="active" onclick="showSection('home')">Trang Chủ</a></li>
+            <li><a href="#" id="menu-tasks" onclick="showSection('tasks')">Nhiệm Vụ</a></li>
+            <li><a href="#" id="menu-withdraw" onclick="showSection('withdraw')">Rút Tiền</a></li>
+            <li><a href="#" id="menu-admin" onclick="showSection('admin')">Quản Trị Admin</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        
+        <section id="page-home" class="page-section" style="display: block;">
+            <div class="card" style="margin-bottom: 25px; text-align: center;">
+                <h2>Chào mừng bạn đến với Crockcity Ecosystem</h2>
+                <p style="margin-top: 15px; line-height: 1.6; color: #8b949e;">
+                    Nền tảng khai thác thu nhập trực tuyến tối ưu thông qua các nhiệm vụ hằng ngày. 
+                    Đơn giản, minh bạch và rút tiền nhanh chóng.
+                </p>
+                <button class="btn btn-primary" style="margin-top: 20px; padding: 10px 24px; font-size: 15px;" onclick="showSection('tasks')">Bắt đầu làm nhiệm vụ ngay ⚡</button>
+            </div>
+
+            <div class="card" style="border-left: 4px solid #1f6feb;">
+                <h3 style="color: #58a6ff; margin-bottom: 15px;">🔍 Giới Thiệu Về Crockcity</h3>
+                <p style="line-height: 1.7; color: #c9d1d9; font-size: 14.5px; margin-bottom: 15px;">
+                    <b>Crockcity</b> là một hệ thống trung gian kết nối cộng đồng người dùng với các nhà tài trợ quảng cáo. Chúng tôi cung cấp giải pháp gia tăng thu nhập thụ động bằng cách tối ưu hóa các lượt truy cập daily của bạn thành giá trị tài chính thực tế.
+                </p>
+                
+                <h4 style="color: #f0f6fc; margin-bottom: 10px; font-size: 15px;">🎯 Nguyên tắc hoạt động:</h4>
+                <ul style="margin-left: 20px; color: #8b949e; font-size: 14px; line-height: 1.8; margin-bottom: 20px;">
+                    <li><b>Đối tác:</b> Các đơn vị rút gọn link (Link4M, Layma...) cần lượng traffic thực tế từ người dùng để phân phối quảng cáo.</li>
+                    <li><b>Thành viên (Bạn):</b> Thực hiện click vào link nhiệm vụ, vượt qua các bước xác minh để lấy mã key chuẩn từ nhà tài trợ.</li>
+                    <li><b>Đồng bộ thưởng:</b> Khi bạn dán mã key khớp lệnh, hệ thống tự động giải ngân lập tức <b>+500 đ</b> vào số dư ví của bạn.</li>
+                </ul>
+
+                <h4 style="color: #f0f6fc; margin-bottom: 10px; font-size: 15px;">💳 Quy định Rút tiền & Đổi thưởng:</h4>
+                <p style="line-height: 1.6; color: #8b949e; font-size: 14px;">
+                    Hệ thống hỗ trợ quy đổi phần thưởng linh hoạt sang các cổng nội địa thông dụng như <b>Ví điện tử MoMo, Ngân hàng MB Bank, hoặc Thẻ cào Viettel</b> ngay khi tài khoản của bạn đạt hạn mức tối thiểu là <b>10,000 đ</b>. Thời gian Admin duyệt đơn nhanh chóng, uy tín.
+                </p>
+            </div>
+        </section>
+
+        <section id="page-tasks" class="page-section" style="display: none;">
+            <div class="balance-card">
+                <h3>Số dư của bạn</h3>
+                <h1 id="user-balance">0 đ</h1>
+                <p>Mỗi nhiệm vụ hoàn thành nhận ngay <b>+500 đ</b></p>
+            </div>
+
+            <h2 style="margin-bottom: 20px;">Danh Sách Nhiệm Vụ Hàng Daily (Giới hạn 2 lần/ngày)</h2>
+            
+            <div class="task-box">
+                <div class="task-info">
+                    <h4>Nhiệm vụ 1: Vượt link rút gọn Link4M</h4>
+                    <p id="count-task-1" class="task-count">Đã làm: 0/2 lần</p>
+                </div>
+                <div class="task-action">
+                    <button class="btn btn-primary" onclick="startTask(1)">1. Lấy Link</button>
+                    <div class="input-group">
+                        <input type="text" id="inputKey1" placeholder="Nhập mã xác nhận tại đây...">
+                        <button class="btn btn-success" onclick="verifyKey(1)">2. Xác Nhận</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-box">
+                <div class="task-info">
+                    <h4>Nhiệm vụ 2: Vượt link nhận mã Layma.net</h4>
+                    <p id="count-task-2" class="task-count">Đã làm: 0/2 lần</p>
+                </div>
+                <div class="task-action">
+                    <button class="btn btn-primary" onclick="startTask(2)">1. Lấy Link</button>
+                    <div class="input-group">
+                        <input type="text" id="inputKey2" placeholder="Nhập mã xác nhận tại đây...">
+                        <button class="btn btn-success" onclick="verifyKey(2)">2. Xác Nhận</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-box">
+                <div class="task-info">
+                    <h4>Nhiệm vụ 3: Tìm từ khóa trên Google nhận mã Linktot</h4>
+                    <p id="count-task-3" class="task-count">Đã làm: 0/2 lần</p>
+                </div>
+                <div class="task-action">
+                    <button class="btn btn-primary" onclick="startTask(3)">1. Lấy Link</button>
+                    <div class="input-group">
+                        <input type="text" id="inputKey3" placeholder="Nhập mã xác nhận tại đây...">
+                        <button class="btn btn-success" onclick="verifyKey(3)">2. Xác Nhận</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page-withdraw" class="page-section" style="display: none;">
+            <div class="card">
+                <h2>Tạo Lệnh Đổi Thưởng</h2>
+                <p style="color: #8b949e; margin-bottom: 20px;">Hệ thống hỗ trợ duyệt rút tiền nhanh chóng qua các cổng thanh toán nội địa.</p>
+                <form id="withdraw-form" onsubmit="submitUserWithdraw(event)">
+                    <div class="form-group">
+                        <label>Chọn Cổng Thanh Toán:</label>
+                        <select id="userPayMethod">
+                            <option value="MoMo">Ví Điện Tử MoMo</option>
+                            <option value="MB Bank">Ngân Hàng MB Bank</option>
+                            <option value="Viettel">Thẻ Cào Viettel</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Số Tài Khoản / Số Điện Thoại nhận tiền:</label>
+                        <input type="text" id="userPayInfo" placeholder="Nhập STK hoặc SĐT..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Số tiền muốn rút (Min 10,000 đ):</label>
+                        <input type="number" id="userPayAmount" placeholder="Ví dụ: 10000" min="10000" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Gửi Yêu Cầu Rút Tiền</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="page-admin" class="page-section" style="display: none;">
+            <div class="card" style="margin-bottom: 30px;">
+                <h2>Bảng Cấu Hình Đường Link & Key Nhiệm Vụ</h2>
+                <p style="color: #8b949e; font-size: 13px; margin-bottom: 20px;">Mã Key bên dưới sẽ tự động biến đổi ngẫu nhiên sang mã mới tinh ngay sau khi có user giải lệnh thành công!</p>
+                
+                <div style="margin-top: 15px;">
+                    <div style="background: #1c2128; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #30363d;">
+                        <label><b>Nhiệm vụ 1 (Link4M):</b></label>
+                        <div class="input-group" style="margin: 8px 0;">
+                            <input type="text" id="adminLink1">
+                            <button class="btn btn-primary" onclick="updateAdminLink(1)">Lưu Link</button>
+                        </div>
+                        <div style="font-size: 14px; color: #8b949e; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                            <span>Mã Key hiện tại trên máy: <b id="adminKeyShow1" style="color: #ffd700; font-family: monospace; font-size: 15px;">---</b></span>
+                            <button class="btn" style="background: #21262d; color: #c9d1d9; padding: 4px 10px; font-size: 12px;" onclick="adminChangeKeyManually(1)">Đổi Key Thủ Công ⚙️</button>
+                        </div>
+                    </div>
+
+                    <div style="background: #1c2128; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #30363d;">
+                        <label><b>Nhiệm vụ 2 (Layma):</b></label>
+                        <div class="input-group" style="margin: 8px 0;">
+                            <input type="text" id="adminLink2">
+                            <button class="btn btn-primary" onclick="updateAdminLink(2)">Lưu Link</button>
+                        </div>
+                        <div style="font-size: 14px; color: #8b949e; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                            <span>Mã Key hiện tại trên máy: <b id="adminKeyShow2" style="color: #ffd700; font-family: monospace; font-size: 15px;">---</b></span>
+                            <button class="btn" style="background: #21262d; color: #c9d1d9; padding: 4px 10px; font-size: 12px;" onclick="adminChangeKeyManually(2)">Đổi Key Thủ Công ⚙️</button>
+                        </div>
+                    </div>
+
+                    <div style="background: #1c2128; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #30363d;">
+                        <label><b>Nhiệm vụ 3 (Linktot):</b></label>
+                        <div class="input-group" style="margin: 8px 0;">
+                            <input type="text" id="adminLink3">
+                            <button class="btn btn-primary" onclick="updateAdminLink(3)">Lưu Link</button>
+                        </div>
+                        <div style="font-size: 14px; color: #8b949e; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                            <span>Mã Key hiện tại trên máy: <b id="adminKeyShow3" style="color: #ffd700; font-family: monospace; font-size: 15px;">---</b></span>
+                            <button class="btn" style="background: #21262d; color: #c9d1d9; padding: 4px 10px; font-size: 12px;" onclick="adminChangeKeyManually(3)">Đổi Key Thủ Công ⚙️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Danh Sách Lệnh Rút Tiền Toàn Hệ Thống</h2>
+                <div style="overflow-x: auto; margin-top: 15px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tài Khoản</th>
+                                <th>Phương Thức</th>
+                                <th>Thông Tin Nhận</th>
+                                <th>Số Tiền</th>
+                                <th>Trạng Thái</th>
+                                <th>Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-withdraw-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
