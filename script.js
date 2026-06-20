@@ -1,29 +1,11 @@
-// ================= CONFIG FIREBASE (CƠ SỞ DỮ LIỆU) =================
-// 🔴 BẠN CẦN LÊN FIREBASE TẠO MỘT DỰ ÁN MIỄN PHÍ VÀ THAY THÔNG TIN THẬT VÀO ĐÂY NHÉ
-const firebaseConfig = {
-    apiKey: "AIzaSyA...",
-    authDomain: "dự-án-của-bạn.firebaseapp.com",
-    databaseURL: "https://dự-án-của-bạn-default-rtdb.firebaseio.com/",
-    projectId: "dự-án-của-bạn",
-    storageBucket: "dự-án-của-bạn.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456:web:abcde"
-};
-
-// Khởi tạo Firebase nếu thư viện đã tải thành công
-if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-
 // Biến lưu thông tin người dùng đang đăng nhập hệ thống toàn cục
 let currentUsername = "";
 let currentUserData = { balance: 0, task1: 0, task2: 0, task3: 0 };
 let isAdminLoggedIn = false;
 
-// ================= 🔴 KHU VỰC CẤU HÌNH TOKEN BOT TELEGRAM ADMIN =================
+// ================= 🔴 KHU VỰC CẤU HÌNH BOT TELEGRAM ADMIN =================
 const TELEGRAM_TOKEN = "ĐIỀN_TOKEN_BOT_CỦA_BẠN_VÀO_ĐÂY"; 
 const TELEGRAM_CHAT_ID = "ĐIỀN_CHAT_ID_CỦA_BẠN_VÀO_ĐÂY"; 
-const GOOGLE_API_URL = "LINK_GOOGLE_APPS_SCRIPT_CỦA_BẠN"; 
 
 let wrongKeyCounter = 0;
 
@@ -48,12 +30,7 @@ if (!localStorage.getItem('key_task_1')) localStorage.setItem('key_task_1', gene
 if (!localStorage.getItem('key_task_2')) localStorage.setItem('key_task_2', generateRandomKey());
 if (!localStorage.getItem('key_task_3')) localStorage.setItem('key_task_3', generateRandomKey());
 
-// ================= LOGIC ĐĂNG KÝ / ĐĂNG NHẬP ĐÁM MÂY CLOUD =================
-function toggleAuthForm(showLogin) {
-    document.getElementById('auth-login-form').style.display = showLogin ? 'block' : 'none';
-    document.getElementById('auth-register-form').style.display = showLogin ? 'none' : 'block';
-}
-
+// ================= LOGIC ĐĂNG KÝ / ĐĂNG NHẬP LOCAL (CHỐNG LỖI) =================
 function handleUserRegister() {
     let user = document.getElementById('authUserReg').value.trim().toLowerCase();
     let pass = document.getElementById('authPassReg').value.trim();
@@ -63,67 +40,56 @@ function handleUserRegister() {
         return;
     }
     
-    if (typeof firebase === 'undefined' || !firebase.apps.length) {
-        alert("⚠️ Hệ thống Firebase chưa được cấu hình. Vui lòng kết nối Firebase Config trước!");
+    if (localStorage.getItem('local_user_' + user)) {
+        alert("❌ Tên tài khoản này đã có người đăng ký!");
         return;
     }
 
-    // Kiểm tra xem tài khoản đã tồn tại trên Firebase chưa
-    firebase.database().ref('users/' + user).once('value').then((snapshot) => {
-        if (snapshot.exists()) {
-            alert("❌ Tên tài khoản này đã có người sử dụng!");
-        } else {
-            // Tạo cấu trúc tài khoản mới lưu lên database
-            firebase.database().ref('users/' + user).set({
-                password: CryptoJS.MD5(pass).toString(), // Mã hóa mật khẩu bảo mật MD5
-                balance: 0,
-                task1: 0,
-                task2: 0,
-                task3: 0
-            }).then(() => {
-                alert("🎉 Đăng ký tài khoản thành công! Hãy đăng nhập nhé.");
-                toggleAuthForm(true);
-            });
-        }
-    }).catch(err => alert("Lỗi kết nối database: " + err.message));
+    let newUserObj = {
+        password: CryptoJS.MD5(pass).toString(), 
+        balance: 0,
+        task1: 0,
+        task2: 0,
+        task3: 0
+    };
+    
+    localStorage.setItem('local_user_' + user, JSON.stringify(newUserObj));
+    alert("🎉 Đăng ký tài khoản thành công! Bây giờ bạn hãy Đăng Nhập ở ô bên trái nhé.");
+    
+    document.getElementById('authUserReg').value = "";
+    document.getElementById('authPassReg').value = "";
 }
 
 function handleUserLogin() {
     let user = document.getElementById('authUserLogin').value.trim().toLowerCase();
     let pass = document.getElementById('authPassLogin').value.trim();
     
-    if (typeof firebase === 'undefined' || !firebase.apps.length) {
-        alert("⚠️ Hệ thống Firebase chưa được cấu hình!");
-        return;
-    }
-
-    firebase.database().ref('users/' + user).once('value').then((snapshot) => {
-        if (snapshot.exists()) {
-            let data = snapshot.val();
-            // So khớp mật khẩu băm mã hóa MD5
-            if (data.password === CryptoJS.MD5(pass).toString()) {
-                currentUsername = user;
-                currentUserData = data;
-                
-                // Ẩn hoàn toàn màn hình khóa đăng nhập
-                document.getElementById('user-auth-screen').style.display = 'none';
-                alert(`👋 Chào mừng quay trở lại, ${user}!`);
-                
-                updateTaskDisplay();
-            } else {
-                alert("❌ Mật khẩu không chính xác!");
-            }
+    let localDataText = localStorage.getItem('local_user_' + user);
+    
+    if (localDataText) {
+        let parsedData = JSON.parse(localDataText);
+        if (parsedData.password === CryptoJS.MD5(pass).toString()) {
+            currentUsername = user;
+            currentUserData = parsedData;
+            
+            document.getElementById('user-auth-screen').style.display = 'none';
+            alert(`👋 Chào mừng quay trở lại, ${user}!`);
+            
+            updateTaskDisplay();
         } else {
-            alert("❌ Tài khoản không tồn tại trên hệ thống!");
+            alert("❌ Mật khẩu không chính xác!");
         }
-    }).catch(err => alert("Lỗi đăng nhập: " + err.message));
+    } else {
+        alert("❌ Tài khoản này không tồn tại trên hệ thống!");
+    }
 }
 
 function userLogout() {
+    saveCurrentUserData();
+    
     currentUsername = "";
     currentUserData = { balance: 0, task1: 0, task2: 0, task3: 0 };
     
-    // Hiện lại màn hình khóa đăng nhập
     document.getElementById('user-auth-screen').style.display = 'flex';
     document.getElementById('authUserLogin').value = "";
     document.getElementById('authPassLogin').value = "";
@@ -131,40 +97,25 @@ function userLogout() {
     alert("🚪 Bạn đã đăng xuất tài khoản thành công!");
 }
 
-function syncDataToFirebase() {
-    if (currentUsername && typeof firebase !== 'undefined' && firebase.apps.length) {
-        firebase.database().ref('users/' + currentUsername).update({
-            balance: currentUserData.balance,
-            task1: currentUserData.task1,
-            task2: currentUserData.task2,
-            task3: currentUserData.task3
-        });
+function saveCurrentUserData() {
+    if (currentUsername) {
+        localStorage.setItem('local_user_' + currentUsername, JSON.stringify(currentUserData));
     }
 }
 
 // ================= HÀM CHẶN GIAN LẬN VÀ KHÓA CỨNG TRANG WEB =================
 function reportCheat(reason) {
-    if (GOOGLE_API_URL && GOOGLE_API_URL !== "LINK_GOOGLE_APPS_SCRIPT_CỦA_BẠN") {
-        fetch(GOOGLE_API_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reason: reason })
-        }).catch(err => console.log("Lỗi log bảo mật."));
-    }
-    
     document.body.innerHTML = `
         <div style="color: #e74c3c; text-align:center; padding: 120px 20px; font-family: sans-serif; background:#0f141c; height:100vh; width:100vw; position:fixed; top:0; left:0; z-index:999999;">
             <h1 style="font-size: 38px; margin-bottom: 20px;">🛑 KẾT NỐI BỊ ĐÓNG BĂNG</h1>
             <p style="color: #8b949e; font-size: 16px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
                 Hệ thống bảo mật phát hiện hành vi gian lận (Auto-click/Spam mã/Sửa số dư hiển thị). 
-                Hồ sơ vi phạm của bạn đã được mã hóa gửi trực tiếp về Ban quản trị hệ thống.
+                Hồ sơ vi phạm của bạn đã được gửi trực tiếp về Ban quản trị hệ thống.
             </p>
         </div>
     `;
 }
 
-// BẪY HACK 1: CHỐNG INSPECT ELEMENT SỬA SỐ DƯ HIỂN THỊ (Quét mỗi 2 giây)
 setInterval(function() {
     const displayBalance = document.getElementById('user-balance');
     if (displayBalance && displayBalance.offsetParent !== null && currentUsername !== "") {
@@ -177,7 +128,6 @@ setInterval(function() {
     }
 }, 2000);
 
-// Khóa chuột phải và phím F12 để tăng cường bảo mật
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.onkeydown = function(e) {
     if (e.keyCode == 123 || 
@@ -229,7 +179,7 @@ function checkAdminLogin() {
 
     let hashedPassword = CryptoJS.MD5(passwordInput.value).toString();
 
-    // Chuỗi mã hóa MD5 tương ứng của mật khẩu cấp cao: Crockcity2026
+    // Mật khẩu MD5 tương ứng của chuỗi: Crockcity2026
     if (hashedPassword === "84b77f9cd99351de83626786a344933a") {
         isAdminLoggedIn = true;
         passwordInput.value = ""; 
@@ -266,7 +216,6 @@ function updateTaskDisplay() {
             countEl.innerText = `Đã làm: ${count}/2 lần`;
         }
 
-        // TỰ ĐỘNG KHÓA HOẶC MỞ NÚT LÀM NHIỆM VỤ NẾU QUÁ 2 LẦN
         const taskBtn = document.querySelector(`#page-tasks .card:nth-of-type(${i}) .btn-primary`);
         if (count >= 2 && taskBtn) {
             taskBtn.innerText = "🔒 Đã hết lượt hôm nay";
@@ -287,9 +236,8 @@ function updateTaskDisplay() {
 function startTask(taskId) {
     let count = currentUserData[`task${taskId}`] || 0;
     
-    // CẢNH BÁO 1: Khóa cứng không cho bấm làm nếu đã đạt giới hạn 2 lần
     if (count >= 2) {
-        alert("❌ Bạn đã hoàn thành tối đa 2 lượt làm nhiệm vụ này trong ngày hôm nay! Vui lòng quay lại vào ngày mai.");
+        alert("❌ Bạn đã hoàn thành tối đa 2 lượt làm nhiệm vụ này trong ngày hôm nay!");
         return;
     }
 
@@ -302,14 +250,12 @@ function startTask(taskId) {
 function verifyKey(taskId) {
     let count = currentUserData[`task${taskId}`] || 0;
     
-    // CẢNH BÁO 2: Chặn spam nút nhập mã khi đã hết lượt làm nhiệm vụ
     if (count >= 2) {
-        alert("❌ Nhiệm vụ này đã đạt giới hạn 2 lần làm. Hệ thống không đồng ý cộng thêm tiền!");
+        alert("❌ Nhiệm vụ này đã đạt giới hạn 2 lần làm.");
         return;
     }
 
     let lastClick = parseInt(localStorage.getItem(`last_click_${taskId}`) || '0');
-    // BẪY HACK 2: Chống Tool Auto Bypass vượt link siêu tốc dưới 12 giây
     if (lastClick === 0 || (Date.now() - lastClick < 12000)) {
         reportCheat(`Sử dụng Tool vượt link siêu tốc (Thời gian hoàn thành: ${(Date.now() - lastClick)/1000} giây)`);
         return;
@@ -325,8 +271,8 @@ function verifyKey(taskId) {
 
     if (codeEntered === correctKey) {
         wrongKeyCounter = 0; 
-        currentUserData[`task${taskId}`] += 1; // Tăng số lượt làm của User
-        currentUserData.balance += 500; // Cộng tiền thưởng
+        currentUserData[`task${taskId}`] += 1; 
+        currentUserData.balance += 500; 
         
         alert("🎉 Thành công! +500 đ đã được cộng vào tài khoản.");
         
@@ -335,11 +281,10 @@ function verifyKey(taskId) {
         
         inputField.value = "";
         
-        syncDataToFirebase(); // Đẩy đồng bộ thẳng lên mây Firebase
+        saveCurrentUserData(); 
         updateTaskDisplay();
     } else {
         wrongKeyCounter++;
-        // BẪY HACK 3: Chống Spam mã sai liên tục quá 5 lần để dò Key trái phép
         if (wrongKeyCounter >= 5) {
             reportCheat("Spam mã sai liên tục quá 5 lần để dò tìm Key hệ thống");
             return;
@@ -361,13 +306,12 @@ function submitUserWithdraw(event) {
         return; 
     }
 
-    currentUserData.balance -= amount; // Trừ tiền tài khoản
-    syncDataToFirebase(); // Đồng bộ số dư mới bị trừ lên Firebase
+    currentUserData.balance -= amount; 
+    saveCurrentUserData(); 
     alert("✓ Gửi yêu cầu rút tiền lên hệ thống thành công!");
     
-    // Automation: Tự động soạn văn bản và kích hoạt bot Telegram bắn thông tin về máy Admin
     if (TELEGRAM_TOKEN !== "ĐIỀN_TOKEN_BOT_CỦA_BẠN_VÀO_ĐÂY") {
-        const messageText = `🚨 <b>CROCKCITY MMO - CÓ LỆNH RÚT TIỀN MỚI!</b>\n\n` +
+        const messageText = `🚨 <b>CROCKCITY - CÓ LỆNH RÚT TIỀN MỚI!</b>\n\n` +
                             `👤 <b>Tài khoản:</b> ${currentUsername}\n` +
                             `💳 <b>Hình thức:</b> ${method}\n` +
                             `📌 <b>Thông tin nhận:</b> <code>${info}</code>\n` +
@@ -395,7 +339,7 @@ function submitUserWithdraw(event) {
             <td>${method}</td>
             <td>${info}</td>
             <td>${amount.toLocaleString('vi-VN')} đ</td>
-            <td><span class="badge badge-pending">Chờ Duyệt</span></td>
+            <td><span class="badge badge-pending" style="background:#f59e0b; padding:2px 6px; border-radius:4px; color:#fff;">Chờ Duyệt</span></td>
             <td><button style="background:#2ecc71; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="this.parentElement.previousElementSibling.innerHTML='Đã Duyệt'; this.remove();">Duyệt</button></td>
         `;
         tbody.appendChild(row);
