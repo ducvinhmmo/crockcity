@@ -85,8 +85,19 @@ document.onkeydown = function(e) {
     }
 };
 
-// ================= LOGIC ĐIỀU HƯỚNG CHUYỂN CÁC TAB TAB =================
+// ================= LOGIC ĐIỀU HƯỚNG CÁC TAB (CÓ KHÓA MẬT KHẨU ADMIN) =================
 function showSection(sectionId) {
+    // Nếu bấm vào tab Admin, bắt buộc phải check mật khẩu chính xác
+    if (sectionId === 'admin') {
+        let password = prompt("🔑 Vui lòng nhập mật khẩu cấp cao dành cho Admin:");
+        
+        // Bạn có thể đổi chữ "Crockcity2026" thành mật khẩu riêng của bạn ở đây
+        if (password !== "Crockcity2026") { 
+            alert("❌ Mật khẩu Admin không chính xác! Bạn không có quyền truy cập khu vực này.");
+            return; // Chặn đứng tại đây, không cho chuyển tab
+        }
+    }
+
     const sections = ['home', 'tasks', 'withdraw', 'admin'];
     sections.forEach(sec => {
         const el = document.getElementById(`page-${sec}`);
