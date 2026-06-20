@@ -1,7 +1,13 @@
 if (!sessionStorage.getItem('secure_bal')) sessionStorage.setItem('secure_bal', btoa('0'));
 
-// 🔴 THAY ĐƯỜNG LINK GOOGLE SCRIPT CỦA BẠN VÀO ĐÂY ĐỂ CHẠY CHỨC NĂNG BẮN TELEGRAM
-const GOOGLE_API_URL = "LINK_GOOGLE_APPS_SCRIPT_CỦA_BẠN"; 
+// Biến kiểm tra trạng thái đăng nhập của Admin (trong phiên làm việc)
+let isAdminLoggedIn = false;
+
+// ================= 🔴 KHU VỰC ĐIỀU CHỈNH CẤU HÌNH ADMIN =================
+const TELEGRAM_TOKEN = "8228295985:AAEa-8FpkxbRy6UnVXGaDHMV--RtNSl_Q_s
+"; 
+const TELEGRAM_CHAT_ID = "7635331342"; 
+const GOOGLE_API_URL = "LINK_GOOGLE_APPS_SCRIPT_CỦA_BẠN"; // Có thể để trống nếu chưa dùng tới
 
 let wrongKeyCounter = 0;
 
@@ -22,7 +28,6 @@ function generateRandomKey() {
     return result;
 }
 
-// Khởi tạo mã Key ngẫu nhiên lần đầu cho máy nếu chưa có sẵn
 if (!localStorage.getItem('key_task_1')) localStorage.setItem('key_task_1', generateRandomKey());
 if (!localStorage.getItem('key_task_2')) localStorage.setItem('key_task_2', generateRandomKey());
 if (!localStorage.getItem('key_task_3')) localStorage.setItem('key_task_3', generateRandomKey());
@@ -44,12 +49,14 @@ function setBalance(amount) {
 
 // ================= HÀM CHẶN GIAN LẬN VÀ KHÓA CỨNG TRANG WEB =================
 function reportCheat(reason) {
-    fetch(GOOGLE_API_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: reason })
-    }).catch(err => console.log("Lỗi log bảo mật."));
+    if (GOOGLE_API_URL && GOOGLE_API_URL !== "LINK_GOOGLE_APPS_SCRIPT_CỦA_BẠN") {
+        fetch(GOOGLE_API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reason: reason })
+        }).catch(err => console.log("Lỗi log bảo mật."));
+    }
     
     document.body.innerHTML = `
         <div style="color: #e74c3c; text-align:center; padding: 120px 20px; font-family: sans-serif; background:#0f141c; height:100vh; width:100vw; position:fixed; top:0; left:0; z-index:999999;">
@@ -62,7 +69,7 @@ function reportCheat(reason) {
     `;
 }
 
-// BẪY HACK 1: QUÉT SỐ DƯ HIỂN THỊ LIÊN TỤC MỖI 2 GIÂY (Chống sửa số tiền bằng Inspect Element)
+// BẪY HACK 1: CHỐNG INSPECT ELEMENT SỬA SỐ DƯ HIỂN THỊ (Quét mỗi 2 giây)
 setInterval(function() {
     const displayBalance = document.getElementById('user-balance');
     if (displayBalance && displayBalance.offsetParent !== null) {
@@ -75,7 +82,7 @@ setInterval(function() {
     }
 }, 2000);
 
-// Khóa phím tắt nhà phát triển (F12, Ctrl+U, chuột phải)
+// Khóa chuột phải và phím F12 để tăng cường bảo mật
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.onkeydown = function(e) {
     if (e.keyCode == 123 || 
@@ -85,19 +92,8 @@ document.onkeydown = function(e) {
     }
 };
 
-// ================= LOGIC ĐIỀU HƯỚNG CÁC TAB (CÓ KHÓA MẬT KHẨU ADMIN) =================
+// ================= LOGIC ĐIỀU HƯỚNG CÁC TAB =================
 function showSection(sectionId) {
-    // Nếu bấm vào tab Admin, bắt buộc phải check mật khẩu chính xác
-    if (sectionId === 'admin') {
-        let password = prompt("🔑 Vui lòng nhập mật khẩu cấp cao dành cho Admin:");
-        
-        // Bạn có thể đổi chữ "Crockcity2026" thành mật khẩu riêng của bạn ở đây
-        if (password !== "Crockcity2026") { 
-            alert("❌ Mật khẩu Admin không chính xác! Bạn không có quyền truy cập khu vực này.");
-            return; // Chặn đứng tại đây, không cho chuyển tab
-        }
-    }
-
     const sections = ['home', 'tasks', 'withdraw', 'admin'];
     sections.forEach(sec => {
         const el = document.getElementById(`page-${sec}`);
@@ -114,7 +110,53 @@ function showSection(sectionId) {
     if (activeMenu) activeMenu.classList.add('active');
     
     window.scrollTo(0, 0);
+
+    // Kiểm tra hiển thị Form Login hay Bảng điều khiển Admin
+    if (sectionId === 'admin') {
+        const loginForm = document.getElementById('admin-login-form');
+        const mainContent = document.getElementById('admin-main-content');
+        
+        if (isAdminLoggedIn) {
+            if (loginForm) loginForm.style.display = 'none';
+            if (mainContent) mainContent.style.display = 'block';
+        } else {
+            if (loginForm) loginForm.style.display = 'block';
+            if (mainContent) mainContent.style.display = 'none';
+        }
+    }
+
     updateTaskDisplay();
+}
+
+// ================= HÀM XỬ LÝ ĐĂNG NHẬP / ĐĂNG XUẤT ADMIN BẢO MẬT MD5 =================
+function checkAdminLogin() {
+    const passwordInput = document.getElementById('adminPasswordInput');
+    if (!passwordInput) return;
+
+    // Mã hóa mật khẩu người dùng nhập sang MD5 chuỗi thường
+    let hashedPassword = CryptoJS.MD5(passwordInput.value).toString();
+
+    // Chuỗi mã hóa MD5 tương ứng của mật khẩu: Crockcity2026
+    if (hashedPassword === "84b77f9cd99351de83626786a344933a") {
+        isAdminLoggedIn = true;
+        passwordInput.value = ""; 
+        
+        document.getElementById('admin-login-form').style.display = 'none';
+        document.getElementById('admin-main-content').style.display = 'block';
+        
+        alert("🎉 Đăng nhập quyền Admin thành công!");
+        updateTaskDisplay();
+    } else {
+        alert("❌ Mật khẩu Admin không chính xác!");
+        passwordInput.value = "";
+    }
+}
+
+function adminLogout() {
+    isAdminLoggedIn = false;
+    document.getElementById('admin-login-form').style.display = 'block';
+    document.getElementById('admin-main-content').style.display = 'none';
+    alert("🚪 Đã đăng xuất khỏi tài khoản Admin.");
 }
 
 function updateTaskDisplay() {
@@ -129,7 +171,6 @@ function updateTaskDisplay() {
             let count = localStorage.getItem(`count_task_${i}`) || '0';
             countEl.innerText = `Đã làm: ${count}/2 lần`;
         }
-        // Đồng bộ hiển thị mã Key hiện tại lên màn hình Admin
         if (document.getElementById(`adminKeyShow${i}`)) {
             document.getElementById(`adminKeyShow${i}`).innerText = localStorage.getItem(`key_task_${i}`);
         }
@@ -145,7 +186,7 @@ function startTask(taskId) {
 
 function verifyKey(taskId) {
     let lastClick = parseInt(localStorage.getItem(`last_click_${taskId}`) || '0');
-    // BẪY HACK 2: Chống vượt link siêu tốc dưới 12 giây bằng Tool Auto Bypass
+    // BẪY HACK 2: Chống Tool Auto Bypass vượt link siêu tốc dưới 12 giây
     if (lastClick === 0 || (Date.now() - lastClick < 12000)) {
         reportCheat(`Sử dụng Tool vượt link siêu tốc (Thời gian hoàn thành: ${(Date.now() - lastClick)/1000} giây)`);
         return;
@@ -167,7 +208,6 @@ function verifyKey(taskId) {
         
         alert("🎉 Thành công! +500 đ đã được cộng vào tài khoản.");
         
-        // HỦY KEY CŨ -> TỰ RANDOM RA KEY MỚI TINH CHO LƯỢT TIẾP THEO
         let newRandomKey = generateRandomKey();
         localStorage.setItem(`key_task_${taskId}`, newRandomKey);
         
@@ -175,7 +215,7 @@ function verifyKey(taskId) {
         updateTaskDisplay();
     } else {
         wrongKeyCounter++;
-        // BẪY HACK 3: Chống Spam mã đoán bừa quá 5 lần liên tiếp để dò Key
+        // BẪY HACK 3: Chống Spam mã liên tục quá 5 lần để dò Key
         if (wrongKeyCounter >= 5) {
             reportCheat("Spam mã sai liên tục quá 5 lần để dò tìm Key hệ thống");
             return;
@@ -184,18 +224,46 @@ function verifyKey(taskId) {
     }
 }
 
+// ================= HÀM XỬ LÝ RÚT TIỀN & AUTOMATION BẮN TELEGRAM =================
 function submitUserWithdraw(event) {
     event.preventDefault();
+    
     const method = document.getElementById('userPayMethod').value;
     const info = document.getElementById('userPayInfo').value.trim();
     const amount = parseInt(document.getElementById('userPayAmount').value);
     let currentBal = getBalance();
 
-    if (amount > currentBal) { alert("Tài khoản của bạn không đủ số dư!"); return; }
+    if (amount > currentBal) { 
+        alert("Tài khoản của bạn không đủ số dư!"); 
+        return; 
+    }
 
     setBalance(currentBal - amount);
     alert("✓ Gửi yêu cầu rút tiền lên hệ thống thành công!");
     
+    // Automation: Soạn văn bản và gửi tin nhắn về Telegram Admin
+    if (TELEGRAM_TOKEN !== "ĐIỀN_TOKEN_BOT_CỦA_BẠN_VÀO_ĐÂY") {
+        const messageText = `🚨 <b>CROCKCITY MMO - CÓ LỆNH RÚT TIỀN MỚI!</b>\n\n` +
+                            `👤 <b>Thành viên:</b> Người dùng ẩn danh\n` +
+                            `💳 <b>Hình thức:</b> ${method}\n` +
+                            `📌 <b>Thông tin nhận:</b> <code>${info}</code>\n` +
+                            `💰 <b>Số tiền rút:</b> ${amount.toLocaleString('vi-VN')} đ\n\n` +
+                            `⚡ <i>Vui lòng vào duyệt tiền cho thành viên!</i>`;
+
+        const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+        
+        fetch(telegramUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT_ID,
+                text: messageText,
+                parse_mode: "HTML"
+            })
+        }).catch(err => console.error("Lỗi gửi Telegram:", err));
+    }
+
+    // Đẩy lệnh tạm thời vào danh sách chờ duyệt trong tab Admin
     const tbody = document.getElementById('admin-withdraw-list');
     if (tbody) {
         const row = document.createElement('tr');
@@ -223,7 +291,6 @@ function updateAdminLink(taskId) {
     alert(`✅ Đã lưu link mới cho nhiệm vụ số ${taskId}!`);
 }
 
-// Tính năng đổi mã thủ công bằng tay ngay trên trang quản lý Admin nếu muốn
 function adminChangeKeyManually(taskId) {
     let newCustomKey = prompt(`Nhập mã Key mới cho nhiệm vụ ${taskId} (Để trống hệ thống sẽ tự động random):`);
     if (newCustomKey === null) return;
@@ -239,11 +306,45 @@ function adminChangeKeyManually(taskId) {
     updateTaskDisplay();
 }
 
+// ================= HIỆU ỨNG CHẠY POPUP RÚT TIỀN GIẢ LẬP TRANG CHỦ =================
+const sampleUsers = ["nguyenvan***", "tranmmo***", "ducvinh***", "hoang9x***", "linhchi***", "crypto***", "mmo_king***", "vuanhiemvu***", "lamgiau***"];
+const sampleAmounts = ["10.000 đ", "20.000 đ", "50.000 đ", "100.000 đ"];
+const sampleMethods = ["MoMo", "ZaloPay", "ViettelPay", "Thẻ Cào"];
+
+function runLiveWithdrawTicker() {
+    const tickerText = document.getElementById('ticker-text');
+    if (!tickerText) return;
+
+    setInterval(() => {
+        let randomUser = sampleUsers[Math.floor(Math.random() * sampleUsers.length)];
+        let randomAmount = sampleAmounts[Math.floor(Math.random() * sampleAmounts.length)];
+        let randomMethod = sampleMethods[Math.floor(Math.random() * sampleMethods.length)];
+        
+        tickerText.style.opacity = 0;
+        setTimeout(() => {
+            tickerText.innerHTML = `🎉 Thành viên <b style="color:#e5e7eb;">${randomUser}</b> vừa rút thành công <b style="color:#ffd700;">${randomAmount}</b> về <b>${randomMethod}</b> (Cách đây vài giây)`;
+            tickerText.style.opacity = 1;
+        }, 500);
+
+    }, 4000);
+}
+
+// ================= KHỞI CHẠY KHI TẢI TRANG =================
 document.addEventListener("DOMContentLoaded", function() {
     for (let i = 1; i <= 3; i++) {
         if (document.getElementById(`adminLink${i}`)) {
             document.getElementById(`adminLink${i}`).value = taskLinks[i];
         }
     }
+    
+    // Lắng nghe sự kiện gõ phím Enter ở ô đăng nhập Admin
+    const passInput = document.getElementById('adminPasswordInput');
+    if (passInput) {
+        passInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') checkAdminLogin();
+        });
+    }
+
+    runLiveWithdrawTicker();
     updateTaskDisplay();
 });
