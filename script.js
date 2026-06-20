@@ -1,17 +1,33 @@
-if (!sessionStorage.getItem('secure_bal')) sessionStorage.setItem('secure_bal', btoa('0'));
+// ================= CONFIG FIREBASE (CƠ SỞ DỮ LIỆU) =================
+// 🔴 BẠN CẦN LÊN FIREBASE TẠO MỘT DỰ ÁN MIỄN PHÍ VÀ THAY THÔNG TIN THẬT VÀO ĐÂY NHÉ
+const firebaseConfig = {
+    apiKey: "AIzaSyA...",
+    authDomain: "dự-án-của-bạn.firebaseapp.com",
+    databaseURL: "https://dự-án-của-bạn-default-rtdb.firebaseio.com/",
+    projectId: "dự-án-của-bạn",
+    storageBucket: "dự-án-của-bạn.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456:web:abcde"
+};
 
-// Biến kiểm tra trạng thái đăng nhập của Admin (trong phiên làm việc)
+// Khởi tạo Firebase nếu thư viện đã tải thành công
+if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+// Biến lưu thông tin người dùng đang đăng nhập hệ thống toàn cục
+let currentUsername = "";
+let currentUserData = { balance: 0, task1: 0, task2: 0, task3: 0 };
 let isAdminLoggedIn = false;
 
-// ================= 🔴 KHU VỰC ĐIỀU CHỈNH CẤU HÌNH ADMIN =================
-const TELEGRAM_TOKEN = "8228295985:AAEa-8FpkxbRy6UnVXGaDHMV--RtNSl_Q_s
-"; 
-const TELEGRAM_CHAT_ID = "7635331342"; 
-const GOOGLE_API_URL = "LINK_GOOGLE_APPS_SCRIPT_CỦA_BẠN"; // Có thể để trống nếu chưa dùng tới
+// ================= 🔴 KHU VỰC CẤU HÌNH TOKEN BOT TELEGRAM ADMIN =================
+const TELEGRAM_TOKEN = "ĐIỀN_TOKEN_BOT_CỦA_BẠN_VÀO_ĐÂY"; 
+const TELEGRAM_CHAT_ID = "ĐIỀN_CHAT_ID_CỦA_BẠN_VÀO_ĐÂY"; 
+const GOOGLE_API_URL = "LINK_GOOGLE_APPS_SCRIPT_CỦA_BẠN"; 
 
 let wrongKeyCounter = 0;
 
-// Cấu hình Link mặc định lưu trong LocalStorage
+// Cấu hình Link mặc định của 3 nhiệm vụ lưu trong LocalStorage
 let taskLinks = {
     1: localStorage.getItem('link_task_1') || "https://link4m.com/xxxxx",
     2: localStorage.getItem('link_task_2') || "https://layma.net/xxxxx",
@@ -32,19 +48,98 @@ if (!localStorage.getItem('key_task_1')) localStorage.setItem('key_task_1', gene
 if (!localStorage.getItem('key_task_2')) localStorage.setItem('key_task_2', generateRandomKey());
 if (!localStorage.getItem('key_task_3')) localStorage.setItem('key_task_3', generateRandomKey());
 
-function getBalance() {
-    try { 
-        let bal = sessionStorage.getItem('secure_bal');
-        return bal ? parseInt(atob(bal)) : 0; 
-    } 
-    catch(e) { 
-        reportCheat("Can thiệp cấu trúc mã hóa bộ nhớ ví (SessionStorage)");
-        return 0; 
-    }
+// ================= LOGIC ĐĂNG KÝ / ĐĂNG NHẬP ĐÁM MÂY CLOUD =================
+function toggleAuthForm(showLogin) {
+    document.getElementById('auth-login-form').style.display = showLogin ? 'block' : 'none';
+    document.getElementById('auth-register-form').style.display = showLogin ? 'none' : 'block';
 }
 
-function setBalance(amount) {
-    sessionStorage.setItem('secure_bal', btoa(amount.toString()));
+function handleUserRegister() {
+    let user = document.getElementById('authUserReg').value.trim().toLowerCase();
+    let pass = document.getElementById('authPassReg').value.trim();
+    
+    if (user === "" || pass.length < 6) {
+        alert("❌ Tên tài khoản không được để trống và mật khẩu phải từ 6 ký tự trở lên!");
+        return;
+    }
+    
+    if (typeof firebase === 'undefined' || !firebase.apps.length) {
+        alert("⚠️ Hệ thống Firebase chưa được cấu hình. Vui lòng kết nối Firebase Config trước!");
+        return;
+    }
+
+    // Kiểm tra xem tài khoản đã tồn tại trên Firebase chưa
+    firebase.database().ref('users/' + user).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+            alert("❌ Tên tài khoản này đã có người sử dụng!");
+        } else {
+            // Tạo cấu trúc tài khoản mới lưu lên database
+            firebase.database().ref('users/' + user).set({
+                password: CryptoJS.MD5(pass).toString(), // Mã hóa mật khẩu bảo mật MD5
+                balance: 0,
+                task1: 0,
+                task2: 0,
+                task3: 0
+            }).then(() => {
+                alert("🎉 Đăng ký tài khoản thành công! Hãy đăng nhập nhé.");
+                toggleAuthForm(true);
+            });
+        }
+    }).catch(err => alert("Lỗi kết nối database: " + err.message));
+}
+
+function handleUserLogin() {
+    let user = document.getElementById('authUserLogin').value.trim().toLowerCase();
+    let pass = document.getElementById('authPassLogin').value.trim();
+    
+    if (typeof firebase === 'undefined' || !firebase.apps.length) {
+        alert("⚠️ Hệ thống Firebase chưa được cấu hình!");
+        return;
+    }
+
+    firebase.database().ref('users/' + user).once('value').then((snapshot) => {
+        if (snapshot.exists()) {
+            let data = snapshot.val();
+            // So khớp mật khẩu băm mã hóa MD5
+            if (data.password === CryptoJS.MD5(pass).toString()) {
+                currentUsername = user;
+                currentUserData = data;
+                
+                // Ẩn hoàn toàn màn hình khóa đăng nhập
+                document.getElementById('user-auth-screen').style.display = 'none';
+                alert(`👋 Chào mừng quay trở lại, ${user}!`);
+                
+                updateTaskDisplay();
+            } else {
+                alert("❌ Mật khẩu không chính xác!");
+            }
+        } else {
+            alert("❌ Tài khoản không tồn tại trên hệ thống!");
+        }
+    }).catch(err => alert("Lỗi đăng nhập: " + err.message));
+}
+
+function userLogout() {
+    currentUsername = "";
+    currentUserData = { balance: 0, task1: 0, task2: 0, task3: 0 };
+    
+    // Hiện lại màn hình khóa đăng nhập
+    document.getElementById('user-auth-screen').style.display = 'flex';
+    document.getElementById('authUserLogin').value = "";
+    document.getElementById('authPassLogin').value = "";
+    
+    alert("🚪 Bạn đã đăng xuất tài khoản thành công!");
+}
+
+function syncDataToFirebase() {
+    if (currentUsername && typeof firebase !== 'undefined' && firebase.apps.length) {
+        firebase.database().ref('users/' + currentUsername).update({
+            balance: currentUserData.balance,
+            task1: currentUserData.task1,
+            task2: currentUserData.task2,
+            task3: currentUserData.task3
+        });
+    }
 }
 
 // ================= HÀM CHẶN GIAN LẬN VÀ KHÓA CỨNG TRANG WEB =================
@@ -72,11 +167,11 @@ function reportCheat(reason) {
 // BẪY HACK 1: CHỐNG INSPECT ELEMENT SỬA SỐ DƯ HIỂN THỊ (Quét mỗi 2 giây)
 setInterval(function() {
     const displayBalance = document.getElementById('user-balance');
-    if (displayBalance && displayBalance.offsetParent !== null) {
+    if (displayBalance && displayBalance.offsetParent !== null && currentUsername !== "") {
         let cleanText = displayBalance.innerText.replace(/[^0-9]/g, '');
         let textVal = cleanText === "" ? 0 : parseInt(cleanText);
         
-        if (!isNaN(textVal) && textVal !== getBalance()) {
+        if (!isNaN(textVal) && textVal !== currentUserData.balance) {
             reportCheat("Cố tình sửa đổi giá trị số dư hiển thị (Inspect Element)");
         }
     }
@@ -111,7 +206,6 @@ function showSection(sectionId) {
     
     window.scrollTo(0, 0);
 
-    // Kiểm tra hiển thị Form Login hay Bảng điều khiển Admin
     if (sectionId === 'admin') {
         const loginForm = document.getElementById('admin-login-form');
         const mainContent = document.getElementById('admin-main-content');
@@ -133,10 +227,9 @@ function checkAdminLogin() {
     const passwordInput = document.getElementById('adminPasswordInput');
     if (!passwordInput) return;
 
-    // Mã hóa mật khẩu người dùng nhập sang MD5 chuỗi thường
     let hashedPassword = CryptoJS.MD5(passwordInput.value).toString();
 
-    // Chuỗi mã hóa MD5 tương ứng của mật khẩu: Crockcity2026
+    // Chuỗi mã hóa MD5 tương ứng của mật khẩu cấp cao: Crockcity2026
     if (hashedPassword === "84b77f9cd99351de83626786a344933a") {
         isAdminLoggedIn = true;
         passwordInput.value = ""; 
@@ -162,15 +255,29 @@ function adminLogout() {
 function updateTaskDisplay() {
     const balEl = document.getElementById('user-balance');
     if (balEl) {
-        balEl.innerText = getBalance().toLocaleString('vi-VN') + ' đ';
+        balEl.innerText = currentUserData.balance.toLocaleString('vi-VN') + ' đ';
     }
     
     for (let i = 1; i <= 3; i++) {
         const countEl = document.getElementById(`count-task-${i}`);
+        let count = currentUserData[`task${i}`] || 0;
+        
         if (countEl) {
-            let count = localStorage.getItem(`count_task_${i}`) || '0';
             countEl.innerText = `Đã làm: ${count}/2 lần`;
         }
+
+        // TỰ ĐỘNG KHÓA HOẶC MỞ NÚT LÀM NHIỆM VỤ NẾU QUÁ 2 LẦN
+        const taskBtn = document.querySelector(`#page-tasks .card:nth-of-type(${i}) .btn-primary`);
+        if (count >= 2 && taskBtn) {
+            taskBtn.innerText = "🔒 Đã hết lượt hôm nay";
+            taskBtn.style.background = "#4b5563";
+            taskBtn.style.cursor = "not-allowed";
+        } else if (count < 2 && taskBtn) {
+            taskBtn.innerText = "Làm Nhiệm Vụ 🚀";
+            taskBtn.style.background = ""; 
+            taskBtn.style.cursor = "pointer";
+        }
+
         if (document.getElementById(`adminKeyShow${i}`)) {
             document.getElementById(`adminKeyShow${i}`).innerText = localStorage.getItem(`key_task_${i}`);
         }
@@ -178,6 +285,14 @@ function updateTaskDisplay() {
 }
 
 function startTask(taskId) {
+    let count = currentUserData[`task${taskId}`] || 0;
+    
+    // CẢNH BÁO 1: Khóa cứng không cho bấm làm nếu đã đạt giới hạn 2 lần
+    if (count >= 2) {
+        alert("❌ Bạn đã hoàn thành tối đa 2 lượt làm nhiệm vụ này trong ngày hôm nay! Vui lòng quay lại vào ngày mai.");
+        return;
+    }
+
     localStorage.setItem(`last_click_${taskId}`, Date.now());
     let currentKey = localStorage.getItem(`key_task_${taskId}`);
     alert(`THÔNG BÁO CHO ADMIN: Mã xác nhận hiện tại của link này là [ ${currentKey} ]. Bạn hãy dùng mã này cài làm key đích trên trang rút gọn link của bạn.`);
@@ -185,6 +300,14 @@ function startTask(taskId) {
 }
 
 function verifyKey(taskId) {
+    let count = currentUserData[`task${taskId}`] || 0;
+    
+    // CẢNH BÁO 2: Chặn spam nút nhập mã khi đã hết lượt làm nhiệm vụ
+    if (count >= 2) {
+        alert("❌ Nhiệm vụ này đã đạt giới hạn 2 lần làm. Hệ thống không đồng ý cộng thêm tiền!");
+        return;
+    }
+
     let lastClick = parseInt(localStorage.getItem(`last_click_${taskId}`) || '0');
     // BẪY HACK 2: Chống Tool Auto Bypass vượt link siêu tốc dưới 12 giây
     if (lastClick === 0 || (Date.now() - lastClick < 12000)) {
@@ -202,9 +325,8 @@ function verifyKey(taskId) {
 
     if (codeEntered === correctKey) {
         wrongKeyCounter = 0; 
-        let newCount = parseInt(localStorage.getItem(`count_task_${taskId}`) || '0') + 1;
-        localStorage.setItem(`count_task_${taskId}`, newCount);
-        setBalance(getBalance() + 500);
+        currentUserData[`task${taskId}`] += 1; // Tăng số lượt làm của User
+        currentUserData.balance += 500; // Cộng tiền thưởng
         
         alert("🎉 Thành công! +500 đ đã được cộng vào tài khoản.");
         
@@ -212,10 +334,12 @@ function verifyKey(taskId) {
         localStorage.setItem(`key_task_${taskId}`, newRandomKey);
         
         inputField.value = "";
+        
+        syncDataToFirebase(); // Đẩy đồng bộ thẳng lên mây Firebase
         updateTaskDisplay();
     } else {
         wrongKeyCounter++;
-        // BẪY HACK 3: Chống Spam mã liên tục quá 5 lần để dò Key
+        // BẪY HACK 3: Chống Spam mã sai liên tục quá 5 lần để dò Key trái phép
         if (wrongKeyCounter >= 5) {
             reportCheat("Spam mã sai liên tục quá 5 lần để dò tìm Key hệ thống");
             return;
@@ -231,20 +355,20 @@ function submitUserWithdraw(event) {
     const method = document.getElementById('userPayMethod').value;
     const info = document.getElementById('userPayInfo').value.trim();
     const amount = parseInt(document.getElementById('userPayAmount').value);
-    let currentBal = getBalance();
 
-    if (amount > currentBal) { 
+    if (amount > currentUserData.balance) { 
         alert("Tài khoản của bạn không đủ số dư!"); 
         return; 
     }
 
-    setBalance(currentBal - amount);
+    currentUserData.balance -= amount; // Trừ tiền tài khoản
+    syncDataToFirebase(); // Đồng bộ số dư mới bị trừ lên Firebase
     alert("✓ Gửi yêu cầu rút tiền lên hệ thống thành công!");
     
-    // Automation: Soạn văn bản và gửi tin nhắn về Telegram Admin
+    // Automation: Tự động soạn văn bản và kích hoạt bot Telegram bắn thông tin về máy Admin
     if (TELEGRAM_TOKEN !== "ĐIỀN_TOKEN_BOT_CỦA_BẠN_VÀO_ĐÂY") {
         const messageText = `🚨 <b>CROCKCITY MMO - CÓ LỆNH RÚT TIỀN MỚI!</b>\n\n` +
-                            `👤 <b>Thành viên:</b> Người dùng ẩn danh\n` +
+                            `👤 <b>Tài khoản:</b> ${currentUsername}\n` +
                             `💳 <b>Hình thức:</b> ${method}\n` +
                             `📌 <b>Thông tin nhận:</b> <code>${info}</code>\n` +
                             `💰 <b>Số tiền rút:</b> ${amount.toLocaleString('vi-VN')} đ\n\n` +
@@ -263,12 +387,11 @@ function submitUserWithdraw(event) {
         }).catch(err => console.error("Lỗi gửi Telegram:", err));
     }
 
-    // Đẩy lệnh tạm thời vào danh sách chờ duyệt trong tab Admin
     const tbody = document.getElementById('admin-withdraw-list');
     if (tbody) {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td><b>Thành Viên</b></td>
+            <td><b>${currentUsername}</b></td>
             <td>${method}</td>
             <td>${info}</td>
             <td>${amount.toLocaleString('vi-VN')} đ</td>
@@ -337,7 +460,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
-    // Lắng nghe sự kiện gõ phím Enter ở ô đăng nhập Admin
     const passInput = document.getElementById('adminPasswordInput');
     if (passInput) {
         passInput.addEventListener('keydown', function(e) {
