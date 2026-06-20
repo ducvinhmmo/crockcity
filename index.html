@@ -5,52 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crockcity MMO Project</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Thư viện mã hóa bảo mật MD5 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
-    <div id="user-auth-screen" style="position: fixed; top:0; left:0; width:100vw; height:100vh; background:#0f141c; z-index:99999; display: flex; align-items: center; justify-content: center; font-family: sans-serif;">
-        <div class="card" style="width: 100%; max-width: 400px; padding: 25px; box-sizing: border-box;">
+    <!-- ================= MÀN HÌNH KHÓA: ĐĂNG NHẬP & ĐĂNG KÝ USER (CHIA ĐÔI) ================= -->
+    <div id="user-auth-screen" style="position: fixed; top:0; left:0; width:100vw; height:100vh; background:#0f141c; z-index:99999; display: flex; align-items: center; justify-content: center; font-family: sans-serif; overflow-y: auto; padding: 20px 0;">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 850px; padding: 0 15px; box-sizing: border-box;">
             
-            <div id="auth-login-form">
-                <h2 style="text-align: center; margin-bottom: 20px; color: #3b82f6;">季 ĐĂNG NHẬP THÀNH VIÊN</h2>
+            <!-- Bên trái: Form Đăng Nhập -->
+            <div class="card" style="flex: 1; min-width: 320px; padding: 25px; box-sizing: border-box; border: 1px solid #30363d; background: #161b22; border-radius: 8px;">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #3b82f6; font-size: 20px;">🔐 ĐĂNG NHẬP THÀNH VIÊN</h2>
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Tên tài khoản (Viết liền không dấu):</label>
-                    <input type="text" id="authUserLogin" placeholder="Ví dụ: ducvinh123" style="width:100%; padding:10px; box-sizing:border-box;">
+                    <label style="color: #c9d1d9; display:block; margin-bottom: 5px; font-size: 13px;">Tên tài khoản:</label>
+                    <input type="text" id="authUserLogin" placeholder="Ví dụ: ducvinh123" style="width:100%; padding:10px; box-sizing:border-box; background:#0f141c; color:#fff; border:1px solid #30363d; border-radius:6px;">
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Mật khẩu:</label>
-                    <input type="password" id="authPassLogin" placeholder="Nhập mật khẩu..." style="width:100%; padding:10px; box-sizing:border-box;">
+                    <label style="color: #c9d1d9; display:block; margin-bottom: 5px; font-size: 13px;">Mật khẩu:</label>
+                    <input type="password" id="authPassLogin" placeholder="Nhập mật khẩu..." style="width:100%; padding:10px; box-sizing:border-box; background:#0f141c; color:#fff; border:1px solid #30363d; border-radius:6px;">
                 </div>
-                <button class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="handleUserLogin()">Đăng Nhập Ngay 🚀</button>
-                <p style="text-align: center; margin-top: 15px; font-size: 13px; color: #8b949e;">
-                    Chưa có tài khoản? <a href="#" style="color: #10b981;" onclick="toggleAuthForm(false)">Đăng ký ngay</a>
-                </p>
+                <button class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px; font-weight:bold; cursor:pointer;" onclick="handleUserLogin()">Đăng Nhập Vào Web 🚀</button>
             </div>
 
-            <div id="auth-register-form" style="display: none;">
-                <h2 style="text-align: center; margin-bottom: 20px; color: #10b981;">📝 ĐĂNG KÝ TÀI KHOẢN</h2>
+            <!-- Bên phải: Form Đăng Ký -->
+            <div class="card" style="flex: 1; min-width: 320px; padding: 25px; box-sizing: border-box; border: 1px solid #30363d; background: #161b22; border-radius: 8px;">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #10b981; font-size: 20px;">📝 ĐĂNG KÝ TÀI KHOẢN</h2>
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Tên tài khoản mới:</label>
-                    <input type="text" id="authUserReg" placeholder="Ví dụ: ducvinh123" style="width:100%; padding:10px; box-sizing:border-box;">
+                    <label style="color: #c9d1d9; display:block; margin-bottom: 5px; font-size: 13px;">Tên tài khoản mới:</label>
+                    <input type="text" id="authUserReg" placeholder="Ví dụ: ducvinh123" style="width:100%; padding:10px; box-sizing:border-box; background:#0f141c; color:#fff; border:1px solid #30363d; border-radius:6px;">
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Mật khẩu (Tối thiểu 6 ký tự):</label>
-                    <input type="password" id="authPassReg" placeholder="Nhập mật khẩu bảo mật..." style="width:100%; padding:10px; box-sizing:border-box;">
+                    <label style="color: #c9d1d9; display:block; margin-bottom: 5px; font-size: 13px;">Mật khẩu (≥ 6 ký tự):</label>
+                    <input type="password" id="authPassReg" placeholder="Nhập mật khẩu bảo mật..." style="width:100%; padding:10px; box-sizing:border-box; background:#0f141c; color:#fff; border:1px solid #30363d; border-radius:6px;">
                 </div>
-                <button class="btn btn-success" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="handleUserRegister()">Tạo Tài Khoản 🎉</button>
-                <p style="text-align: center; margin-top: 15px; font-size: 13px; color: #8b949e;">
-                    Đã có tài khoản? <a href="#" style="color: #3b82f6;" onclick="toggleAuthForm(true)">Đăng nhập</a>
-                </p>
+                <button class="btn btn-success" style="width: 100%; padding: 12px; margin-top: 10px; font-weight:bold; cursor:pointer;" onclick="handleUserRegister()">Tạo Tài Khoản Mới 🎉</button>
             </div>
 
         </div>
     </div>
 
+    <!-- ================= GIAO DIỆN CHÍNH CỦA WEBSITE ================= -->
     <div class="container">
         
+        <!-- Thanh thông tin số dư -->
         <div class="header">
             <div class="logo">CROCKCITY</div>
             <div class="balance-box">
@@ -59,6 +57,7 @@
             </div>
         </div>
 
+        <!-- Thanh Menu Điều Hướng -->
         <nav class="nav-menu" style="display: flex; justify-content: space-between; align-items: center; background: #161b22; padding: 10px; border-radius: 6px; margin-bottom: 20px;">
             <div style="display: flex; gap: 10px;">
                 <button id="menu-home" class="nav-item active" onclick="showSection('home')">🏠 Trang Chủ</button>
@@ -66,9 +65,10 @@
                 <button id="menu-withdraw" class="nav-item" onclick="showSection('withdraw')">💳 Rút Tiền</button>
                 <button id="menu-admin" class="nav-item" onclick="showSection('admin')">🔒 Quản Trị Admin</button>
             </div>
-            <button class="btn" style="background: #da3637; color: white; padding: 6px 12px; font-size: 12px;" onclick="userLogout()">Đăng Xuất 🚪</button>
+            <button class="btn" style="background: #da3637; color: white; padding: 6px 12px; font-size: 12px; border:none; border-radius:4px; cursor:pointer;" onclick="userLogout()">Đăng Xuất 🚪</button>
         </nav>
 
+        <!-- ================= TAB 1: TRANG CHỦ ================= -->
         <section id="page-home" class="page-section">
             <div class="card" style="background: linear-gradient(135deg, #1f2937, #111827); border: 1px solid #3b82f6; text-align: center; padding: 30px 20px;">
                 <h1 style="color: #3b82f6; font-size: 28px; margin-bottom: 10px; text-transform: uppercase;">🚀 Crockcity MMO Project</h1>
@@ -106,14 +106,14 @@
                         <span style="background: #10b981; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px;">2</span>
                         <div>
                             <h4 style="color: #e5e7eb; margin-bottom: 2px; font-size: 14px;">Vượt Link Lấy Mã Key</h4>
-                            <p style="color: #9ca3af; font-size: 13px;">Làm theo hướng dẫn trên trang đích (Tìm kiếm Google, cuộn trang lấy mã) để nhận được mã Key bảo mật.</p>
+                            <p style="color: #9ca3af; font-size: 13px;">Làm theo hướng dẫn trên trang đích để nhận được mã Key bảo mật.</p>
                         </div>
                     </div>
                     <div style="display: flex; gap: 15px; align-items: flex-start;">
                         <span style="background: #f59e0b; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px;">3</span>
                         <div>
                             <h4 style="color: #e5e7eb; margin-bottom: 2px; font-size: 14px;">Nhập Key Nhận Tiền</h4>
-                            <p style="color: #9ca3af; font-size: 13px;">Quay lại web dán mã Key vào ô nhập, hệ thống kiểm tra trùng khớp sẽ cộng ngay +500 đ vào ví.</p>
+                            <p style="color: #9ca3af; font-size: 13px;">Quay lại web dán mã Key vào ô nhập, hệ thống kiểm tra đúng sẽ cộng ngay +500 đ vào ví.</p>
                         </div>
                     </div>
                 </div>
@@ -132,6 +132,7 @@
             </div>
         </section>
 
+        <!-- ================= TAB 2: NHIỆM VỤ ================= -->
         <section id="page-tasks" class="page-section" style="display: none;">
             <div class="card" style="margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -173,6 +174,7 @@
             </div>
         </section>
 
+        <!-- ================= TAB 3: RÚT TIỀN ================= -->
         <section id="page-withdraw" class="page-section" style="display: none;">
             <div class="card">
                 <h2>Tạo Lệnh Rút Tiền Về Ví / Thẻ</h2>
@@ -196,11 +198,12 @@
                         <label>Số tiền rút (đ):</label>
                         <input type="number" id="userPayAmount" required min="1" placeholder="Ví dụ: 10000">
                     </div>
-                    <button type="submit" class="btn btn-success" style="width: 100%; padding: 12px; font-size: 15px;">Gửi Yêu Cầu Rút Tiền 💸</button>
+                    <button type="submit" class="btn btn-success" style="width: 100%; padding: 12px; font-size: 15px; cursor:pointer;">Gửi Yêu Cầu Rút Tiền 💸</button>
                 </form>
             </div>
         </section>
 
+        <!-- ================= TAB 4: BAN QUẢN TRỊ ADMIN ================= -->
         <section id="page-admin" class="page-section" style="display: none;">
             
             <div class="card" id="admin-login-form" style="max-width: 450px; margin: 30px auto; text-align: center;">
@@ -212,16 +215,15 @@
                     <label>Mật khẩu cấp cao:</label>
                     <input type="password" id="adminPasswordInput" placeholder="Nhập mật khẩu Admin..." style="width: 100%; box-sizing: border-box; padding: 12px; font-size: 15px;">
                 </div>
-                <button class="btn btn-success" style="width: 100%; padding: 12px; margin-top: 10px; font-size: 15px;" onclick="checkAdminLogin()">Đăng Nhập Ngay 🚀</button>
+                <button class="btn btn-success" style="width: 100%; padding: 12px; margin-top: 10px; font-size: 15px; cursor:pointer;" onclick="checkAdminLogin()">Đăng Nhập Ngay 🚀</button>
             </div>
 
             <div id="admin-main-content" style="display: none;">
                 <div class="card" style="margin-bottom: 30px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h2>Bảng Cấu Hình Đường Link & Key Nhiệm Vụ</h2>
-                        <button class="btn" style="background: #da3637; color: white;" onclick="adminLogout()">Đăng Xuất 🚪</button>
+                        <button class="btn" style="background: #da3637; color: white; cursor:pointer;" onclick="adminLogout()">Đăng Xuất 🚪</button>
                     </div>
-                    <p style="color: #8b949e; font-size: 13px; margin-bottom: 20px;">Mã Key bên dưới sẽ tự động biến đổi ngẫu nhiên ngay sau khi có user giải lệnh thành công!</p>
                     
                     <div style="margin-top: 15px;">
                         <div style="background: #1c2128; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #30363d;">
@@ -232,7 +234,7 @@
                             </div>
                             <div style="font-size: 14px; color: #8b949e; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
                                 <span>Mã Key trên máy: <b id="adminKeyShow1" style="color: #ffd700; font-family: monospace; font-size: 15px;">---</b></span>
-                                <button class="btn" style="background: #21262d; color: #c9d1d9; padding: 4px 10px; font-size: 12px;" onclick="adminChangeKeyManually(1)">Đổi Key Thủ Công ⚙️</button>
+                                <button class="btn" style="background: #21262d; color: #c9d1d9; padding: 4px 10px; font-size: 12px; cursor:pointer;" onclick="adminChangeKeyManually(1)">Đổi Key Thủ Công ⚙️</button>
                             </div>
                         </div>
 
@@ -242,4 +244,57 @@
                                 <input type="text" id="adminLink2">
                                 <button class="btn btn-primary" onclick="updateAdminLink(2)">Lưu Link</button>
                             </div>
-                            <div style="font-size: 14px; color: #8b949e; display: flex
+                            <div style="font-size: 14px; color: #8b949e; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                                <span>Mã Key trên máy: <b id="adminKeyShow2" style="color: #ffd700; font-family: monospace; font-size: 15px;">---</b></span>
+                                <button class="btn" style="background: #21262d; color: #c9d1d9; padding: 4px 10px; font-size: 12px; cursor:pointer;" onclick="adminChangeKeyManually(2)">Đổi Key Thủ Công ⚙️</button>
+                            </div>
+                        </div>
+
+                        <div style="background: #1c2128; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #30363d;">
+                            <label><b>Nhiệm vụ 3 (Linktot):</b></label>
+                            <div class="input-group" style="margin: 8px 0;">
+                                <input type="text" id="adminLink3">
+                                <button class="btn btn-primary" onclick="updateAdminLink(3)">Lưu Link</button>
+                            </div>
+                            <div style="font-size: 14px; color: #8b949e; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                                <span>Mã Key trên máy: <b id="adminKeyShow3" style="color: #ffd700; font-family: monospace; font-size: 15px;">---</b></span>
+                                <button class="btn" style="background: #21262d; color: #c9d1d9; padding: 4px 10px; font-size: 12px; cursor:pointer;" onclick="adminChangeKeyManually(3)">Đổi Key Thủ Công ⚙️</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Danh Sách Lệnh Rút Tiền Toàn Hệ Thống</h2>
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tài Khoản</th>
+                                    <th>Phương Thức</th>
+                                    <th>Thông Tin Nhận</th>
+                                    <th>Số Tiền</th>
+                                    <th>Trạng Thái</th>
+                                    <th>Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-withdraw-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+
+    <style>
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+    </style>
+    <script src="script.js"></script>
+</body>
+</html>
