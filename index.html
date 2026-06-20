@@ -3,203 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crockcity - Kiếm Tiền Online 2026</title>
+    <title>Crockcity MMO Project</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
-    <nav>
-        <div class="logo" style="display: flex; align-items: center; gap: 8px; font-family: 'Arial Black', Gadget, sans-serif;">
-            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width: 35px; height: 35px; filter: drop-shadow(0 0 6px #ffd700);">
-                <path d="M20,15 L40,85 L55,85 L80,15 L62,15 L48,65 L35,15 Z" fill="#ffffff"/>
-                <polygon points="45,5 65,45 50,45 60,95 35,50 50,50" fill="#ffd700"/>
-            </svg>
-            <span style="color: #ffd700; text-shadow: 0 0 8px #ffd700; font-weight: 900; font-size: 24px;">Crockcity</span>
+    <div id="user-auth-screen" style="position: fixed; top:0; left:0; width:100vw; height:100vh; background:#0f141c; z-index:99999; display: flex; align-items: center; justify-content: center; font-family: sans-serif;">
+        <div class="card" style="width: 100%; max-width: 400px; padding: 25px; box-sizing: border-box;">
+            
+            <div id="auth-login-form">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #3b82f6;">季 ĐĂNG NHẬP THÀNH VIÊN</h2>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Tên tài khoản (Viết liền không dấu):</label>
+                    <input type="text" id="authUserLogin" placeholder="Ví dụ: ducvinh123" style="width:100%; padding:10px; box-sizing:border-box;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Mật khẩu:</label>
+                    <input type="password" id="authPassLogin" placeholder="Nhập mật khẩu..." style="width:100%; padding:10px; box-sizing:border-box;">
+                </div>
+                <button class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="handleUserLogin()">Đăng Nhập Ngay 🚀</button>
+                <p style="text-align: center; margin-top: 15px; font-size: 13px; color: #8b949e;">
+                    Chưa có tài khoản? <a href="#" style="color: #10b981;" onclick="toggleAuthForm(false)">Đăng ký ngay</a>
+                </p>
+            </div>
+
+            <div id="auth-register-form" style="display: none;">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #10b981;">📝 ĐĂNG KÝ TÀI KHOẢN</h2>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Tên tài khoản mới:</label>
+                    <input type="text" id="authUserReg" placeholder="Ví dụ: ducvinh123" style="width:100%; padding:10px; box-sizing:border-box;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Mật khẩu (Tối thiểu 6 ký tự):</label>
+                    <input type="password" id="authPassReg" placeholder="Nhập mật khẩu bảo mật..." style="width:100%; padding:10px; box-sizing:border-box;">
+                </div>
+                <button class="btn btn-success" style="width: 100%; padding: 12px; margin-top: 10px;" onclick="handleUserRegister()">Tạo Tài Khoản 🎉</button>
+                <p style="text-align: center; margin-top: 15px; font-size: 13px; color: #8b949e;">
+                    Đã có tài khoản? <a href="#" style="color: #3b82f6;" onclick="toggleAuthForm(true)">Đăng nhập</a>
+                </p>
+            </div>
+
         </div>
-        <ul>
-            <li><a href="#" id="menu-home" class="active" onclick="showSection('home')">Trang Chủ</a></li>
-            <li><a href="#" id="menu-tasks" onclick="showSection('tasks')">Nhiệm Vụ</a></li>
-            <li><a href="#" id="menu-withdraw" onclick="showSection('withdraw')">Rút Tiền</a></li>
-            <li><a href="#" id="menu-admin" onclick="showSection('admin')">Quản Trị Admin</a></li>
-        </ul>
-    </nav>
+    </div>
 
     <div class="container">
         
-        <section id="page-home" class="page-section" style="display: block;">
-            <div class="card" style="margin-bottom: 25px; text-align: center;">
-                <h2>Chào mừng bạn đến với Crockcity Ecosystem</h2>
-                <p style="margin-top: 15px; line-height: 1.6; color: #8b949e;">
-                    Nền tảng khai thác thu nhập trực tuyến tối ưu thông qua các nhiệm vụ hằng ngày. 
-                    Đơn giản, minh bạch và rút tiền nhanh chóng.
+        <div class="header">
+            <div class="logo">CROCKCITY</div>
+            <div class="balance-box">
+                <span>Số dư:</span>
+                <strong id="user-balance" style="color: #2ecc71;">0 đ</strong>
+            </div>
+        </div>
+
+        <nav class="nav-menu" style="display: flex; justify-content: space-between; align-items: center; background: #161b22; padding: 10px; border-radius: 6px; margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px;">
+                <button id="menu-home" class="nav-item active" onclick="showSection('home')">🏠 Trang Chủ</button>
+                <button id="menu-tasks" class="nav-item" onclick="showSection('tasks')">⚡ Nhiệm Vụ</button>
+                <button id="menu-withdraw" class="nav-item" onclick="showSection('withdraw')">💳 Rút Tiền</button>
+                <button id="menu-admin" class="nav-item" onclick="showSection('admin')">🔒 Quản Trị Admin</button>
+            </div>
+            <button class="btn" style="background: #da3637; color: white; padding: 6px 12px; font-size: 12px;" onclick="userLogout()">Đăng Xuất 🚪</button>
+        </nav>
+
+        <section id="page-home" class="page-section">
+            <div class="card" style="background: linear-gradient(135deg, #1f2937, #111827); border: 1px solid #3b82f6; text-align: center; padding: 30px 20px;">
+                <h1 style="color: #3b82f6; font-size: 28px; margin-bottom: 10px; text-transform: uppercase;">🚀 Crockcity MMO Project</h1>
+                <p style="color: #9ca3af; font-size: 15px; max-width: 500px; margin: 0 auto; line-height: 1.5;">
+                    Nền tảng làm nhiệm vụ rút gọn link kiếm tiền uy tín, bảo mật và rút tiền siêu tốc về Ví MoMo / Thẻ Cào.
                 </p>
-                <button class="btn btn-primary" style="margin-top: 20px; padding: 10px 24px; font-size: 15px;" onclick="showSection('tasks')">Bắt đầu làm nhiệm vụ ngay ⚡</button>
             </div>
 
-            <div class="card" style="border-left: 4px solid #1f6feb;">
-                <h3 style="color: #58a6ff; margin-bottom: 15px;">🔍 Giới Thiệu Về Crockcity</h3>
-                <p style="line-height: 1.7; color: #c9d1d9; font-size: 14.5px; margin-bottom: 15px;">
-                    <b>Crockcity</b> là một hệ thống trung gian kết nối cộng đồng người dùng với các nhà tài trợ quảng cáo. Chúng tôi cung cấp giải pháp gia tăng thu nhập thụ động bằng cách tối ưu hóa các lượt truy cập daily của bạn thành giá trị tài chính thực tế.
-                </p>
-                
-                <h4 style="color: #f0f6fc; margin-bottom: 10px; font-size: 15px;">🎯 Nguyên tắc hoạt động:</h4>
-                <ul style="margin-left: 20px; color: #8b949e; font-size: 14px; line-height: 1.8; margin-bottom: 20px;">
-                    <li><b>Đối tác:</b> Các đơn vị rút gọn link (Link4M, Layma...) cần lượng traffic thực tế từ người dùng để phân phối quảng cáo.</li>
-                    <li><b>Thành viên (Bạn):</b> Thực hiện click vào link nhiệm vụ, vượt qua các bước xác minh để lấy mã key chuẩn từ nhà tài trợ.</li>
-                    <li><b>Đồng bộ thưởng:</b> Khi bạn dán mã key khớp lệnh, hệ thống tự động giải ngân lập tức <b>+500 đ</b> vào số dư ví của bạn.</li>
-                </ul>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin-top: 15px;">
+                <div class="card" style="text-align: center; padding: 15px 10px; background: #1f2937;">
+                    <div style="font-size: 20px; font-weight: bold; color: #10b981;">14,520+</div>
+                    <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Thành Viên</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 15px 10px; background: #1f2937;">
+                    <div style="font-size: 20px; font-weight: bold; color: #3b82f6;">34.8 M</div>
+                    <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Đã Thanh Toán</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 15px 10px; background: #1f2937;">
+                    <div style="font-size: 20px; font-weight: bold; color: #f59e0b;">99.9%</div>
+                    <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Uy Tín</div>
+                </div>
+            </div>
 
-                <h4 style="color: #f0f6fc; margin-bottom: 10px; font-size: 15px;">💳 Quy định Rút tiền & Đổi thưởng:</h4>
-                <p style="line-height: 1.6; color: #8b949e; font-size: 14px;">
-                    Hệ thống hỗ trợ quy đổi phần thưởng linh hoạt sang các cổng nội địa thông dụng như <b>Ví điện tử MoMo, Ngân hàng MB Bank, hoặc Thẻ cào Viettel</b> ngay khi tài khoản của bạn đạt hạn mức tối thiểu là <b>10,000 đ</b>. Thời gian Admin duyệt đơn nhanh chóng, uy tín.
-                </p>
+            <div class="card" style="margin-top: 20px;">
+                <h3 style="color: #f3f4f6; margin-bottom: 15px;">📌 Hướng Dẫn 3 Bước Kiếm Tiền</h3>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="display: flex; gap: 15px; align-items: flex-start;">
+                        <span style="background: #3b82f6; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px;">1</span>
+                        <div>
+                            <h4 style="color: #e5e7eb; margin-bottom: 2px; font-size: 14px;">Nhận Nhiệm Vụ</h4>
+                            <p style="color: #9ca3af; font-size: 13px;">Qua tab Nhiệm Vụ, bấm vào nút "Làm Nhiệm Vụ" để hệ thống chuyển tới link rút gọn.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 15px; align-items: flex-start;">
+                        <span style="background: #10b981; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px;">2</span>
+                        <div>
+                            <h4 style="color: #e5e7eb; margin-bottom: 2px; font-size: 14px;">Vượt Link Lấy Mã Key</h4>
+                            <p style="color: #9ca3af; font-size: 13px;">Làm theo hướng dẫn trên trang đích (Tìm kiếm Google, cuộn trang lấy mã) để nhận được mã Key bảo mật.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 15px; align-items: flex-start;">
+                        <span style="background: #f59e0b; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px;">3</span>
+                        <div>
+                            <h4 style="color: #e5e7eb; margin-bottom: 2px; font-size: 14px;">Nhập Key Nhận Tiền</h4>
+                            <p style="color: #9ca3af; font-size: 13px;">Quay lại web dán mã Key vào ô nhập, hệ thống kiểm tra trùng khớp sẽ cộng ngay +500 đ vào ví.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3 style="color: #f3f4f6; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                    <span>🔥 Lịch Sử Rút Tiền Live</span>
+                    <span style="background: #ef4444; width: 8px; height: 8px; border-radius: 50%; display: inline-block; animation: blink 1s infinite;"></span>
+                </h3>
+                <div id="live-withdraw-ticker" style="height: 40px; overflow: hidden; background: #111827; border-radius: 6px; display: flex; align-items: center; padding: 0 12px; border: 1px solid #374151;">
+                    <p id="ticker-text" style="color: #10b981; font-size: 13px; font-weight: 500; transition: all 0.5s ease; width: 100%;">
+                        Đang kết nối cổng thanh toán...
+                    </p>
+                </div>
             </div>
         </section>
 
         <section id="page-tasks" class="page-section" style="display: none;">
-            <div class="balance-card">
-                <h3>Số dư của bạn</h3>
-                <h1 id="user-balance">0 đ</h1>
-                <p>Mỗi nhiệm vụ hoàn thành nhận ngay <b>+500 đ</b></p>
-            </div>
-
-            <h2 style="margin-bottom: 20px;">Danh Sách Nhiệm Vụ Hàng Daily (Giới hạn 2 lần/ngày)</h2>
-            
-            <div class="task-box">
-                <div class="task-info">
-                    <h4>Nhiệm vụ 1: Vượt link rút gọn Link4M</h4>
-                    <p id="count-task-1" class="task-count">Đã làm: 0/2 lần</p>
+            <div class="card" style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>Nhiệm vụ 1: Vượt link rút gọn Link4M</h3>
+                    <span id="count-task-1" class="badge">Đã làm: 0/2 lần</span>
                 </div>
-                <div class="task-action">
-                    <button class="btn btn-primary" onclick="startTask(1)">1. Lấy Link</button>
-                    <div class="input-group">
-                        <input type="text" id="inputKey1" placeholder="Nhập mã xác nhận tại đây...">
-                        <button class="btn btn-success" onclick="verifyKey(1)">2. Xác Nhận</button>
-                    </div>
+                <p style="color: #8b949e; margin: 10px 0;">Thưởng: <strong style="color: #2ecc71;">+500 đ</strong> / lượt giải lệnh thành công.</p>
+                <button class="btn btn-primary" onclick="startTask(1)">Làm Nhiệm Vụ 🚀</button>
+                <div class="input-group" style="margin-top: 15px;">
+                    <input type="text" id="inputKey1" placeholder="Dán mã Key nhận được tại đây...">
+                    <button class="btn btn-success" onclick="verifyKey(1)">Xác Nhận Mã</button>
                 </div>
             </div>
 
-            <div class="task-box">
-                <div class="task-info">
-                    <h4>Nhiệm vụ 2: Vượt link nhận mã Layma.net</h4>
-                    <p id="count-task-2" class="task-count">Đã làm: 0/2 lần</p>
+            <div class="card" style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>Nhiệm vụ 2: Vượt link rút gọn Layma</h3>
+                    <span id="count-task-2" class="badge">Đã làm: 0/2 lần</span>
                 </div>
-                <div class="task-action">
-                    <button class="btn btn-primary" onclick="startTask(2)">1. Lấy Link</button>
-                    <div class="input-group">
-                        <input type="text" id="inputKey2" placeholder="Nhập mã xác nhận tại đây...">
-                        <button class="btn btn-success" onclick="verifyKey(2)">2. Xác Nhận</button>
-                    </div>
+                <p style="color: #8b949e; margin: 10px 0;">Thưởng: <strong style="color: #2ecc71;">+500 đ</strong> / lượt giải lệnh thành công.</p>
+                <button class="btn btn-primary" onclick="startTask(2)">Làm Nhiệm Vụ 🚀</button>
+                <div class="input-group" style="margin-top: 15px;">
+                    <input type="text" id="inputKey2" placeholder="Dán mã Key nhận được tại đây...">
+                    <button class="btn btn-success" onclick="verifyKey(2)">Xác Nhận Mã</button>
                 </div>
             </div>
 
-            <div class="task-box">
-                <div class="task-info">
-                    <h4>Nhiệm vụ 3: Tìm từ khóa trên Google nhận mã Linktot</h4>
-                    <p id="count-task-3" class="task-count">Đã làm: 0/2 lần</p>
+            <div class="card" style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>Nhiệm vụ 3: Vượt link rút gọn Linktot</h3>
+                    <span id="count-task-3" class="badge">Đã làm: 0/2 lần</span>
                 </div>
-                <div class="task-action">
-                    <button class="btn btn-primary" onclick="startTask(3)">1. Lấy Link</button>
-                    <div class="input-group">
-                        <input type="text" id="inputKey3" placeholder="Nhập mã xác nhận tại đây...">
-                        <button class="btn btn-success" onclick="verifyKey(3)">2. Xác Nhận</button>
-                    </div>
+                <p style="color: #8b949e; margin: 10px 0;">Thưởng: <strong style="color: #2ecc71;">+500 đ</strong> / lượt giải lệnh thành công.</p>
+                <button class="btn btn-primary" onclick="startTask(3)">Làm Nhiệm Vụ 🚀</button>
+                <div class="input-group" style="margin-top: 15px;">
+                    <input type="text" id="inputKey3" placeholder="Dán mã Key nhận được tại đây...">
+                    <button class="btn btn-success" onclick="verifyKey(3)">Xác Nhận Mã</button>
                 </div>
             </div>
         </section>
 
         <section id="page-withdraw" class="page-section" style="display: none;">
             <div class="card">
-                <h2>Tạo Lệnh Đổi Thưởng</h2>
-                <p style="color: #8b949e; margin-bottom: 20px;">Hệ thống hỗ trợ duyệt rút tiền nhanh chóng qua các cổng thanh toán nội địa.</p>
-                <form id="withdraw-form" onsubmit="submitUserWithdraw(event)">
+                <h2>Tạo Lệnh Rút Tiền Về Ví / Thẻ</h2>
+                <p style="color: #8b949e; font-size: 13px; margin-bottom: 20px;">Hệ thống xử lý duyệt tiền tự động lệnh rút từ 10.000 đ trở lên.</p>
+                
+                <form onsubmit="submitUserWithdraw(event)">
                     <div class="form-group">
-                        <label>Chọn Cổng Thanh Toán:</label>
-                        <select id="userPayMethod">
-                            <option value="MoMo">Ví Điện Tử MoMo</option>
-                            <option value="MB Bank">Ngân Hàng MB Bank</option>
-                            <option value="Viettel">Thẻ Cào Viettel</option>
+                        <label>Phương thức thanh toán:</label>
+                        <select id="userPayMethod" style="width: 100%; padding: 10px; background: #1f2937; color: white; border: 1px solid #30363d; border-radius: 6px;">
+                            <option value="MoMo">Ví MoMo</option>
+                            <option value="ZaloPay">Ví ZaloPay</option>
+                            <option value="ViettelPay">Ví ViettelPay</option>
+                            <option value="Thẻ Cào">Thẻ Cào Điện Thoại</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Số Tài Khoản / Số Điện Thoại nhận tiền:</label>
-                        <input type="text" id="userPayInfo" placeholder="Nhập STK hoặc SĐT..." required>
+                    <div class="form-group" style="margin: 15px 0;">
+                        <label>Thông tin nhận tiền (Số điện thoại / Số tài khoản / Nhà mạng):</label>
+                        <input type="text" id="userPayInfo" required placeholder="Nhập SĐT MoMo hoặc thông tin nhận tiền...">
                     </div>
-                    <div class="form-group">
-                        <label>Số tiền muốn rút (Min 10,000 đ):</label>
-                        <input type="number" id="userPayAmount" placeholder="Ví dụ: 10000" min="10000" required>
+                    <div class="form-group" style="margin: 15px 0;">
+                        <label>Số tiền rút (đ):</label>
+                        <input type="number" id="userPayAmount" required min="1" placeholder="Ví dụ: 10000">
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Gửi Yêu Cầu Rút Tiền</button>
+                    <button type="submit" class="btn btn-success" style="width: 100%; padding: 12px; font-size: 15px;">Gửi Yêu Cầu Rút Tiền 💸</button>
                 </form>
             </div>
         </section>
 
         <section id="page-admin" class="page-section" style="display: none;">
-            <div class="card" style="margin-bottom: 30px;">
-                <h2>Bảng Cấu Hình Đường Link & Key Nhiệm Vụ</h2>
-                <p style="color: #8b949e; font-size: 13px; margin-bottom: 20px;">Mã Key bên dưới sẽ tự động biến đổi ngẫu nhiên sang mã mới tinh ngay sau khi có user giải lệnh thành công!</p>
+            
+            <div class="card" id="admin-login-form" style="max-width: 450px; margin: 30px auto; text-align: center;">
+                <div style="font-size: 50px; margin-bottom: 10px;">🔑</div>
+                <h2>Hệ Thống Quản Trị</h2>
+                <p style="color: #8b949e; font-size: 14px; margin-bottom: 20px;">Vui lòng xác minh thông tin tài khoản Admin để tiếp tục.</p>
                 
-                <div style="margin-top: 15px;">
-                    <div style="background: #1c2128; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #30363d;">
-                        <label><b>Nhiệm vụ 1 (Link4M):</b></label>
-                        <div class="input-group" style="margin: 8px 0;">
-                            <input type="text" id="adminLink1">
-                            <button class="btn btn-primary" onclick="updateAdminLink(1)">Lưu Link</button>
-                        </div>
-                        <div style="font-size: 14px; color: #8b949e; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                            <span>Mã Key hiện tại trên máy: <b id="adminKeyShow1" style="color: #ffd700; font-family: monospace; font-size: 15px;">---</b></span>
-                            <button class="btn" style="background: #21262d; color: #c9d1d9; padding: 4px 10px; font-size: 12px;" onclick="adminChangeKeyManually(1)">Đổi Key Thủ Công ⚙️</button>
-                        </div>
-                    </div>
-
-                    <div style="background: #1c2128; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #30363d;">
-                        <label><b>Nhiệm vụ 2 (Layma):</b></label>
-                        <div class="input-group" style="margin: 8px 0;">
-                            <input type="text" id="adminLink2">
-                            <button class="btn btn-primary" onclick="updateAdminLink(2)">Lưu Link</button>
-                        </div>
-                        <div style="font-size: 14px; color: #8b949e; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                            <span>Mã Key hiện tại trên máy: <b id="adminKeyShow2" style="color: #ffd700; font-family: monospace; font-size: 15px;">---</b></span>
-                            <button class="btn" style="background: #21262d; color: #c9d1d9; padding: 4px 10px; font-size: 12px;" onclick="adminChangeKeyManually(2)">Đổi Key Thủ Công ⚙️</button>
-                        </div>
-                    </div>
-
-                    <div style="background: #1c2128; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #30363d;">
-                        <label><b>Nhiệm vụ 3 (Linktot):</b></label>
-                        <div class="input-group" style="margin: 8px 0;">
-                            <input type="text" id="adminLink3">
-                            <button class="btn btn-primary" onclick="updateAdminLink(3)">Lưu Link</button>
-                        </div>
-                        <div style="font-size: 14px; color: #8b949e; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                            <span>Mã Key hiện tại trên máy: <b id="adminKeyShow3" style="color: #ffd700; font-family: monospace; font-size: 15px;">---</b></span>
-                            <button class="btn" style="background: #21262d; color: #c9d1d9; padding: 4px 10px; font-size: 12px;" onclick="adminChangeKeyManually(3)">Đổi Key Thủ Công ⚙️</button>
-                        </div>
-                    </div>
+                <div class="form-group" style="text-align: left;">
+                    <label>Mật khẩu cấp cao:</label>
+                    <input type="password" id="adminPasswordInput" placeholder="Nhập mật khẩu Admin..." style="width: 100%; box-sizing: border-box; padding: 12px; font-size: 15px;">
                 </div>
+                <button class="btn btn-success" style="width: 100%; padding: 12px; margin-top: 10px; font-size: 15px;" onclick="checkAdminLogin()">Đăng Nhập Ngay 🚀</button>
             </div>
 
-            <div class="card">
-                <h2>Danh Sách Lệnh Rút Tiền Toàn Hệ Thống</h2>
-                <div style="overflow-x: auto; margin-top: 15px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tài Khoản</th>
-                                <th>Phương Thức</th>
-                                <th>Thông Tin Nhận</th>
-                                <th>Số Tiền</th>
-                                <th>Trạng Thái</th>
-                                <th>Hành Động</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-withdraw-list"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+            <div id="admin-main-content" style="display: none;">
+                <div class="card" style="margin-bottom: 30px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>Bảng Cấu Hình Đường Link & Key Nhiệm Vụ</h2>
+                        <button class="btn" style="background: #da3637; color: white;" onclick="adminLogout()">Đăng Xuất 🚪</button>
+                    </div>
+                    <p style="color: #8b949e; font-size: 13px; margin-bottom: 20px;">Mã Key bên dưới sẽ tự động biến đổi ngẫu nhiên ngay sau khi có user giải lệnh thành công!</p>
+                    
+                    <div style="margin-top: 15px;">
+                        <div style="background: #1c2128; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #30363d;">
+                            <label><b>Nhiệm vụ 1 (Link4M):</b></label>
+                            <div class="input-group" style="margin: 8px 0;">
+                                <input type="text" id="adminLink1">
+                                <button class="btn btn-primary" onclick="updateAdminLink(1)">Lưu Link</button>
+                            </div>
+                            <div style="font-size: 14px; color: #8b949e; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                                <span>Mã Key trên máy: <b id="adminKeyShow1" style="color: #ffd700; font-family: monospace; font-size: 15px;">---</b></span>
+                                <button class="btn" style="background: #21262d; color: #c9d1d9; padding: 4px 10px; font-size: 12px;" onclick="adminChangeKeyManually(1)">Đổi Key Thủ Công ⚙️</button>
+                            </div>
+                        </div>
 
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+                        <div style="background: #1c2128; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #30363d;">
+                            <label><b>Nhiệm vụ 2 (Layma):</b></label>
+                            <div class="input-group" style="margin: 8px 0;">
+                                <input type="text" id="adminLink2">
+                                <button class="btn btn-primary" onclick="updateAdminLink(2)">Lưu Link</button>
+                            </div>
+                            <div style="font-size: 14px; color: #8b949e; display: flex
