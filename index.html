@@ -2,523 +2,60 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crockcity MMO Project</title>
-    <!-- Font chữ công nghệ & Thư viện Icon FontAwesome -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Thư viện mã hóa bảo mật MD5 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
-    <style>
-        :root {
-            --bg-main: #0a0f1d;
-            --bg-card: #131b2e;
-            --bg-input: #0d1424;
-            --border-color: #1e293b;
-            --primary: #f59e0b; /* Màu cam hổ */
-            --primary-glow: rgba(245, 158, 11, 0.2);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --success: #10b981;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            background-image: radial-gradient(circle at 50% 50%, #1e1b4b 0%, var(--bg-main) 80%);
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* CARD STYLE NÂNG CẤP */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .card:hover {
-            border-color: var(--primary);
-            box-shadow: 0 0 20px var(--primary-glow);
-            transform: translateY(-2px);
-        }
-
-        /* LOGO HỔ CÔNG NGHỆ */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 25px;
-        }
-        .logo-box {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .tiger-logo {
-            font-size: 35px;
-            color: var(--primary);
-            text-shadow: 0 0 15px var(--primary);
-            animation: pulse 2s infinite;
-        }
-        .brand-name {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .balance-box {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid var(--primary);
-            padding: 10px 20px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-family: 'Orbitron', sans-serif;
-            box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
-        }
-
-        /* NAVIGATION MENU */
-        .nav-menu {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #111827;
-            padding: 8px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .nav-tabs {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .nav-item {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 10px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .nav-item:hover, .nav-item.active {
-            background: var(--primary);
-            color: #000;
-            box-shadow: 0 4px 12px var(--primary-glow);
-        }
-
-        /* BUTTONS & INPUTS */
-        .btn {
-            background: var(--border-color);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-primary { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #000; }
-        .btn-primary:hover { opacity: 0.9; box-shadow: 0 0 15px rgba(245,158,11,0.4); }
-        .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        .btn-success:hover { opacity: 0.9; box-shadow: 0 0 15px rgba(16,185,129,0.4); }
-        
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-        input, select {
-            flex: 1;
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            outline: none;
-            transition: all 0.2s;
-        }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
-
-        .badge {
-            background: #1e293b;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        /* TABLES */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background: #0d1424;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 14px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-        th { background: #1e293b; color: var(--primary); font-family: 'Orbitron', sans-serif; font-size: 13px; }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.9; }
-            50% { transform: scale(1.05); opacity: 1; text-shadow: 0 0 25px var(--primary); }
-            100% { transform: scale(1); opacity: 0.9; }
-        }
-    </style>
+    <title>Crockcity MMO </title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- ================= MÀN HÌNH KHÓA CHIA ĐÔI ================= -->
-    <div id="user-auth-screen" style="position: fixed; top:0; left:0; width:100vw; height:100vh; background:#060814; z-index:99999; display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 20px 0; background-image: radial-gradient(circle at center, #1e1b4b 0%, #060814 100%);">
-        <div style="display: flex; gap: 25px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 850px; padding: 0 15px; box-sizing: border-box;">
+    <!-- KHUNG LỚN CHỨA TOÀN BỘ GIAO DIỆN -->
+    <div class="app-container">
+
+        <!-- 1. THANH SIDEBAR PHÍA BÊN TRÁI -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>Crockcity VIP</h2>
+            </div>
             
-            <div style="width: 100%; text-align: center; margin-bottom: 10px;">
-                <i class="fa-solid fa-shield-cat tiger-logo" style="font-size: 50px;"></i>
-                <h1 style="font-family: 'Orbitron', sans-serif; letter-spacing: 3px; margin-top: 10px;">CROCKCITY CORE</h1>
+            <!-- Khu vực hiển thị số dư của User -->
+            <div class="user-status-box">
+                <p>Xin chào, <span id="username-display">Loading...</span></p>
+                <p class="balance-title">Số dư hiện tại:</p>
+                <h3 id="balance-display">0 đ</h3>
             </div>
 
-            <!-- Bên trái: Đăng Nhập -->
-            <div class="card" style="flex: 1; min-width: 320px; border-top: 3px solid #3b82f6;">
-                <h2 style="text-align: center; margin-bottom: 20px; color: #3b82f6; font-family: 'Orbitron', sans-serif; font-size: 18px;"><i class="fa-solid fa-shield-halved"></i> ĐĂNG NHẬP HỆ THỐNG</h2>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: var(--text-muted); display:block; margin-bottom: 6px; font-size: 13px;">Tên tài khoản:</label>
-                    <input type="text" id="authUserLogin" placeholder="Nhập tài khoản của bạn...">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: var(--text-muted); display:block; margin-bottom: 6px; font-size: 13px;">Mật khẩu mạng:</label>
-                    <input type="password" id="authPassLogin" placeholder="Nhập mật khẩu...">
-                </div>
-                <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleUserLogin()"><i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Khởi Chạy 🚀</button>
-            </div>
+            <!-- Các mục Menu điều hướng dọc -->
+            <nav class="sidebar-menu">
+                <a href="#" class="active">🏠 Trang Chủ</a>
+                <a href="#">📝 Danh Sách Nhiệm Vụ</a>
+                <a href="#">🎡 Vòng Quay May Mắn</a>
+                <a href="#">💳 Rút Tiền Về ATM</a>
+            </nav>
+        </aside>
 
-            <!-- Bên phải: Đăng Ký -->
-            <div class="card" style="flex: 1; min-width: 320px; border-top: 3px solid var(--primary);">
-                <h2 style="text-align: center; margin-bottom: 20px; color: var(--primary); font-family: 'Orbitron', sans-serif; font-size: 18px;"><i class="fa-solid fa-user-plus"></i> ĐĂNG KÝ THÀNH VIÊN MỚI</h2>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: var(--text-muted); display:block; margin-bottom: 6px; font-size: 13px;">Tên tài khoản mới:</label>
-                    <input type="text" id="authUserReg" placeholder="Ví dụ: ducvinh123">
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="color: var(--text-muted); display:block; margin-bottom: 6px; font-size: 13px;">Mật khẩu (≥ 6 ký tự):</label>
-                    <input type="password" id="authPassReg" placeholder="Tạo mật khẩu an toàn...">
-                </div>
-                <button class="btn btn-success" style="width: 100%; margin-top: 10px;" onclick="handleUserRegister()"><i class="fa-solid fa-id-card"></i> Kích Hoạt Tài Khoản 🎉</button>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- ================= GIAO DIỆN CHÍNH WEBSITE ================= -->
-    <div class="container">
-        
-        <!-- Thanh thông tin đầu trang -->
-        <div class="header">
-            <div class="logo-box">
-                <!-- LOGO CON HỔ CÔNG NGHỆ -->
-                <i class="fa-solid fa-shield-cat tiger-logo"></i>
-                <div class="brand-name">CROCKCITY MMO</div>
-            </div>
-            <div class="balance-box">
-                <i class="fa-solid fa-wallet" style="color: var(--primary);"></i>
-                <span style="color: var(--text-muted); font-size: 13px;">BALANCE:</span>
-                <strong id="user-balance" style="color: #fff;">0 đ</strong>
-            </div>
-        </div>
-
-        <!-- Menu Điều Hướng -->
-        <nav class="nav-menu">
-            <div class="nav-tabs">
-                <button id="menu-home" class="nav-item active" onclick="showSection('home')"><i class="fa-solid fa-house"></i> Hệ Thống</button>
-                <button id="menu-tasks" class="nav-item" onclick="showSection('tasks')"><i class="fa-solid fa-cubes"></i> Nhiệm Vụ</button>
-                <button id="menu-withdraw" class="nav-item" onclick="showSection('withdraw')"><i class="fa-solid fa-credit-card"></i> Rút Tiền</button>
-                <button id="menu-admin" class="nav-item" onclick="showSection('admin')"><i class="fa-solid fa-user-gear"></i> Admin Area</button>
-            </div>
-            <button class="btn" style="background: #ef4444; color: white; padding: 8px 15px; font-size: 13px;" onclick="userLogout()"><i class="fa-solid fa-power-off"></i> Thoát</button>
-        </nav>
-
-        <!-- ================= TAB 1: TRANG CHỦ ================= -->
-        <section id="page-home" class="page-section">
-            <div class="card" style="background: linear-gradient(135deg, #131b2e 0%, #0f172a 100%); border-left: 4px solid var(--primary); padding: 35px 25px;">
-                <h1 style="font-family: 'Orbitron', sans-serif; font-size: 24px; color: var(--primary); margin: 0 0 10px 0;"><i class="fa-solid fa-terminal"></i> CROCKCITY CORE SYSTEM v2.0</h1>
-                <p style="color: var(--text-muted); font-size: 14px; max-width: 650px; line-height: 1.6; margin: 0;">
-                    Nền tảng làm nhiệm vụ vượt cổng liên kết rút gọn kiếm tiền trực tuyến bảo mật cao. Hệ thống tích hợp chống gian lận tự động và duyệt thanh khoản siêu tốc.
-                </p>
-            </div>
-
-            <!-- Các chỉ số thống kê -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
-                <div class="card" style="display: flex; align-items: center; gap: 15px; padding: 20px;">
-                    <i class="fa-solid fa-users" style="font-size: 28px; color: #3b82f6;"></i>
-                    <div>
-                        <div style="font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight:bold;">14,520+</div>
-                        <div style="font-size: 12px; color: var(--text-muted);">Khai Thác Viên Active</div>
-                    </div>
-                </div>
-                <div class="card" style="display: flex; align-items: center; gap: 15px; padding: 20px;">
-                    <i class="fa-solid fa-circle-check" style="font-size: 28px; color: var(--success);"></i>
-                    <div>
-                        <div style="font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight:bold;">34.8 M</div>
-                        <div style="font-size: 12px; color: var(--text-muted);">Thanh Khoản Đã Giải Ngân</div>
-                    </div>
-                </div>
-                <div class="card" style="display: flex; align-items: center; gap: 15px; padding: 20px;">
-                    <i class="fa-solid fa-bolt" style="font-size: 28px; color: var(--primary);"></i>
-                    <div>
-                        <div style="font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight:bold;">0.02s</div>
-                        <div style="font-size: 12px; color: var(--text-muted);">Độ Trễ Phản Hồi Kiểm Key</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hướng dẫn -->
-            <div class="card" style="margin-top: 20px;">
-                <h3 style="margin-top: 0; color: #fff; font-family: 'Orbitron', sans-serif; font-size: 16px;"><i class="fa-solid fa-circle-nodes" style="color:var(--primary)"></i> QUY TRÌNH BAO PHỦ DỮ LIỆU</h3>
-                <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-                    <div style="display: flex; gap: 15px;">
-                        <span style="background: rgba(245,158,11,0.2); color: var(--primary); width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</span>
-                        <div>
-                            <h4 style="margin: 0 0 4px 0; font-size: 14px;">Bắt đầu xung luồng tác vụ</h4>
-                            <p style="color: var(--text-muted); font-size: 13px; margin:0;">Chuyển tới tab Nhiệm Vụ, click chọn cổng để nhận liên kết đích mã hóa mã nguồn.</p>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 15px;">
-                        <span style="background: rgba(59,130,246,0.2); color: #3b82f6; width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</span>
-                        <div>
-                            <h4 style="margin: 0 0 4px 0; font-size: 14px;">Giải mã tệp dữ liệu đích</h4>
-                            <p style="color: var(--text-muted); font-size: 13px; margin:0;">Vượt qua hàng rào liên kết rút gọn theo hướng dẫn trên màn hình cấu trúc để lấy Chuỗi Khóa (Key).</p>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 15px;">
-                        <span style="background: rgba(16,185,129,0.2); color: var(--success); width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</span>
-                        <div>
-                            <h4 style="margin: 0 0 4px 0; font-size: 14px;">Xác minh và Đẩy tiền vào Ví</h4>
-                            <p style="color: var(--text-muted); font-size: 13px; margin:0;">Dán Chuỗi Khóa vào bộ nạp lệnh. Thuật toán kiểm tra hợp lệ sẽ cộng ngay lập tức +500 đ vào dữ liệu lõi.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Khối Ticker chạy tự động -->
-            <div class="card" style="margin-top: 20px;">
-                <h3 style="margin: 0 0 12px 0; font-size: 14px; display: flex; align-items: center; justify-content: space-between; font-family:'Orbitron', sans-serif;">
-                    <span><i class="fa-solid fa-satellite-dish" style="color:#ef4444"></i> LIVE TRANSACTION NETWORK FEED</span>
-                    <span style="background: #ef4444; width: 8px; height: 8px; border-radius: 50%; display: inline-block; animation: blink 1s infinite;"></span>
-                </h3>
-                <div style="height: 45px; overflow: hidden; background: #0b0f19; border-radius: 8px; display: flex; align-items: center; padding: 0 15px; border: 1px solid var(--border-color);">
-                    <p id="ticker-text" style="color: var(--success); font-size: 13px; font-weight: 500; transition: all 0.5s ease; width: 100%; margin:0;">
-                        Đang đồng bộ luồng giao dịch số...
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= TAB 2: KHU NHIỆM VỤ ================= -->
-        <section id="page-tasks" class="page-section" style="display: none;">
+        <!-- 2. KHU VỰC HIỂN THỊ NỘI DUNG CHÍNH PHÍA BÊN PHẢI -->
+        <main class="main-content">
             
-            <div class="card" style="margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="margin:0; font-size:16px;"><i class="fa-solid fa-link" style="color:var(--primary)"></i> Khai thác Cổng 01: Hệ thống Link4M</h3>
-                    <span id="count-task-1" class="badge">Đã làm: 0/2 lần</span>
-                </div>
-                <p style="color: var(--text-muted); margin: 12px 0; font-size: 13px;">Phần thưởng xử lý thành công: <strong style="color: var(--success);">+500 đ</strong></p>
-                <button class="btn btn-primary" onclick="startTask(1)"><i class="fa-solid fa-bolt"></i> Tạo Tiến Trình Kết Nối 🚀</button>
-                <div class="input-group">
-                    <input type="text" id="inputKey1" placeholder="Nhập mã mã hóa đầu cuối tại đây...">
-                    <button class="btn btn-success" onclick="verifyKey(1)"><i class="fa-solid fa-unlock-keyhole"></i> Giải Mã Khóa</button>
+            <!-- Khu vực hiển thị link mời bạn bè (đã làm ở bước trước) -->
+            <div class="referral-box">
+                <h3>👥 Chương Trình Giới Thiệu Bạn Bè</h3>
+                <p id="referrer-display">Người mời bạn: Đang tải...</p>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <input type="text" id="ref-link-input" readonly>
+                    <button onclick="copyRefLink()">Sao Chép</button>
                 </div>
             </div>
 
-            <div class="card" style="margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="margin:0; font-size:16px;"><i class="fa-solid fa-link" style="color:var(--primary)"></i> Khai thác Cổng 02: Hệ thống Layma</h3>
-                    <span id="count-task-2" class="badge">Đã làm: 0/2 lần</span>
-                </div>
-                <p style="color: var(--text-muted); margin: 12px 0; font-size: 13px;">Phần thưởng xử lý thành công: <strong style="color: var(--success);">+500 đ</strong></p>
-                <button class="btn btn-primary" onclick="startTask(2)"><i class="fa-solid fa-bolt"></i> Tạo Tiến Trình Kết Nối 🚀</button>
-                <div class="input-group">
-                    <input type="text" id="inputKey2" placeholder="Nhập mã mã hóa đầu cuối tại đây...">
-                    <button class="btn btn-success" onclick="verifyKey(2)"><i class="fa-solid fa-unlock-keyhole"></i> Giải Mã Khóa</button>
-                </div>
+            <!-- Khu vực chứa các nút bấm làm nhiệm vụ -->
+            <div class="tasks-section">
+                <h3>🎯 Nhiệm Vụ Kiếm Tiền Gốc 1.000đ</h3>
+                <!-- Nút làm nhiệm vụ gọi hàm ăn chia 6:1:3 cộng riêng -->
+                <button class="btn-task" onclick="completeTaskWithBonusRate('task_01', 1000)">Hoàn thành nhiệm vụ 1</button>
             </div>
 
-            <div class="card" style="margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="margin:0; font-size:16px;"><i class="fa-solid fa-link" style="color:var(--primary)"></i> Khai thác Cổng 03: Hệ thống Linktot</h3>
-                    <span id="count-task-3" class="badge">Đã làm: 0/2 lần</span>
-                </div>
-                <p style="color: var(--text-muted); margin: 12px 0; font-size: 13px;">Phần thưởng xử lý thành công: <strong style="color: var(--success);">+500 đ</strong></p>
-                <button class="btn btn-primary" onclick="startTask(3)"><i class="fa-solid fa-bolt"></i> Tạo Tiến Trình Kết Nối 🚀</button>
-                <div class="input-group">
-                    <input type="text" id="inputKey3" placeholder="Nhập mã mã hóa đầu cuối tại đây...">
-                    <button class="btn btn-success" onclick="verifyKey(3)"><i class="fa-solid fa-unlock-keyhole"></i> Giải Mã Khóa</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= TAB 3: RÚT TIỀN ================= -->
-        <section id="page-withdraw" class="page-section" style="display: none;">
-            <div class="card">
-                <h2 style="font-family:'Orbitron', sans-serif; font-size:18px; margin-top:0;"><i class="fa-solid fa-money-bill-transfer" style="color:var(--primary)"></i> KHỞI TẠO LỆNH RÚT THANH KHOẢN</h2>
-                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Hệ thống xử lý tự động lệnh rút có giá trị từ 10.000 đ trở lên.</p>
-                
-                <form onsubmit="submitUserWithdraw(event)">
-                    <div style="margin-bottom: 15px;">
-                        <label style="font-size:13px; color:var(--text-muted); display:block; margin-bottom:6px;">Phương thức thanh toán:</label>
-                        <select id="userPayMethod">
-                            <option value="MoMo">Ví MoMo</option>
-                            <option value="ZaloPay">Ví ZaloPay</option>
-                            <option value="ViettelPay">Ví ViettelPay</option>
-                            <option value="Thẻ Cào">Thẻ Cào Điện Thoại</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="font-size:13px; color:var(--text-muted); display:block; margin-bottom:6px;">Thông tin nhận tiền (SĐT / Số tài khoản / Nhà mạng):</label>
-                        <input type="text" id="userPayInfo" required placeholder="Nhập SĐT MoMo hoặc thông tin nhận tiền...">
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <label style="font-size:13px; color:var(--text-muted); display:block; margin-bottom:6px;">Số tiền rút (đ):</label>
-                        <input type="number" id="userPayAmount" required min="1" placeholder="Ví dụ: 10000">
-                    </div>
-                    <button type="submit" class="btn btn-success" style="width: 100%; padding: 14px;"><i class="fa-solid fa-paper-plane"></i> Gửi Yêu Cầu Rút Tiền 💸</button>
-                </form>
-            </div>
-        </section>
-
-        <!-- ================= TAB 4: BAN QUẢN TRỊ ADMIN ================= -->
-        <section id="page-admin" class="page-section" style="display: none;">
-            
-            <div class="card" id="admin-login-form" style="max-width: 450px; margin: 30px auto; text-align: center;">
-                <i class="fa-solid fa-key" style="font-size: 45px; color: var(--primary); margin-bottom: 15px;"></i>
-                <h2 style="font-family:'Orbitron', sans-serif; font-size:18px; margin:0 0 10px 0;">ROOT ADMIN AUTH</h2>
-                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">Vui lòng xác minh mật khẩu quản trị để tiếp tục.</p>
-                
-                <div style="text-align: left; margin-bottom: 15px;">
-                    <label style="font-size:12px; color:var(--text-muted);">Mật khẩu cấp cao:</label>
-                    <input type="password" id="adminPasswordInput" placeholder="Nhập mật khẩu Admin...">
-                </div>
-                <button class="btn btn-success" style="width: 100%;" onclick="checkAdminLogin()"><i class="fa-solid fa-fingerprint"></i> Đăng Nhập Hệ Thống 🚀</button>
-            </div>
-
-            <div id="admin-main-content" style="display: none;">
-                <div class="card" style="margin-bottom: 30px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap:wrap; gap:10px;">
-                        <h2 style="font-family:'Orbitron', sans-serif; font-size:16px; margin:0;"><i class="fa-solid fa-sliders" style="color:var(--primary)"></i> CẤU HÌNH ĐƯỜNG LINK & KEY TASK</h2>
-                        <button class="btn" style="background: #da3637; padding: 6px 12px; font-size:13px;" onclick="adminLogout()"><i class="fa-solid fa-power-off"></i> Đăng Xuất</button>
-                    </div>
-                    
-                    <div>
-                        <!-- Task 1 admin -->
-                        <div style="background: #0d1424; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border-color);">
-                            <label style="font-size:13px;"><b>Nhiệm vụ 1 (Link4M):</b></label>
-                            <div class="input-group">
-                                <input type="text" id="adminLink1">
-                                <button class="btn btn-primary" onclick="updateAdminLink(1)">Lưu Link</button>
-                            </div>
-                            <div style="font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                                <span>Mã Key trên máy: <b id="adminKeyShow1" style="color: var(--primary); font-family: 'Orbitron', sans-serif;">---</b></span>
-                                <button class="btn" style="background: #1e293b; padding: 4px 10px; font-size: 11px;" onclick="adminChangeKeyManually(1)"><i class="fa-solid fa-arrows-rotate"></i> Đổi Key Thủ Công</button>
-                            </div>
-                        </div>
-
-                        <!-- Task 2 admin -->
-                        <div style="background: #0d1424; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border-color);">
-                            <label style="font-size:13px;"><b>Nhiệm vụ 2 (Layma):</b></label>
-                            <div class="input-group">
-                                <input type="text" id="adminLink2">
-                                <button class="btn btn-primary" onclick="updateAdminLink(2)">Lưu Link</button>
-                            </div>
-                            <div style="font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                                <span>Mã Key trên máy: <b id="adminKeyShow2" style="color: var(--primary); font-family: 'Orbitron', sans-serif;">---</b></span>
-                                <button class="btn" style="background: #1e293b; padding: 4px 10px; font-size: 11px;" onclick="adminChangeKeyManually(2)"><i class="fa-solid fa-arrows-rotate"></i> Đổi Key Thủ Công</button>
-                            </div>
-                        </div>
-
-                        <!-- Task 3 admin -->
-                        <div style="background: #0d1424; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border-color);">
-                            <label style="font-size:13px;"><b>Nhiệm vụ 3 (Linktot):</b></label>
-                            <div class="input-group">
-                                <input type="text" id="adminLink3">
-                                <button class="btn btn-primary" onclick="updateAdminLink(3)">Lưu Link</button>
-                            </div>
-                            <div style="font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                                <span>Mã Key trên máy: <b id="adminKeyShow3" style="color: var(--primary); font-family: 'Orbitron', sans-serif;">---</b></span>
-                                <button class="btn" style="background: #1e293b; padding: 4px 10px; font-size: 11px;" onclick="adminChangeKeyManually(3)"><i class="fa-solid fa-arrows-rotate"></i> Đổi Key Thủ Công</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2 style="font-family:'Orbitron', sans-serif; font-size:16px; margin-top:0;"><i class="fa-solid fa-list-check" style="color:var(--primary)"></i> DANH SÁCH LỆNH RÚT TIỀN TOÀN HỆ THỐNG</h2>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Tài Khoản</th>
-                                    <th>Phương Thức</th>
-                                    <th>Thông Tin Nhận</th>
-                                    <th>Số Tiền</th>
-                                    <th>Trạng Thế</th>
-                                    <th>Hành Động</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-withdraw-list"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-        </section>
+        </main>
 
     </div>
 
-    <style>
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-    </style>
     <script src="script.js"></script>
 </body>
 </html>
